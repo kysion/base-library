@@ -1,6 +1,6 @@
 module github.com/kysion/base-library
 
-go 1.19
+go 1.20
 
 require (
 	github.com/gogf/gf/v2 v2.3.2
