@@ -6,7 +6,7 @@ import (
 )
 
 type BaseHook[T any, F any] struct {
-	hookArr *garray.Array
+	hookArr garray.Array
 }
 
 // InstallHook 安装Hook
@@ -27,7 +27,7 @@ func (s *BaseHook[T, F]) UnInstallHook(filter T, f ...func(filter T, key T) bool
 
 		return true
 	})
-	s.hookArr = newFuncArr
+	s.hookArr = *newFuncArr
 }
 
 // ClearAllHook 清除Hook
