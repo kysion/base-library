@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0c9e9a6b-41b3-4afb-aa2e-0539e27a9fab" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/base-library.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utility/daoctl/index.go" beforeDir="false" afterPath="$PROJECT_DIR$/utility/daoctl/index.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utility/daoctl/scan.go" beforeDir="false" afterPath="$PROJECT_DIR$/utility/daoctl/scan.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,6 +24,10 @@
             <RecentBranchesForRepo>
               <option name="branches">
                 <list>
+                  <RecentBranch>
+                    <option name="branchName" value="pref-query" />
+                    <option name="lastUsedInstant" value="1678716934" />
+                  </RecentBranch>
                   <RecentBranch>
                     <option name="branchName" value="fix-base-hook" />
                     <option name="lastUsedInstant" value="1677808136" />
