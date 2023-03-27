@@ -1,4 +1,4 @@
-package utils
+package format
 
 import (
 	"github.com/gogf/gf/v2/os/gtime"
