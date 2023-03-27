@@ -1,4 +1,4 @@
-package utils
+package format_utils
 
 import (
 	"github.com/gogf/gf/v2/os/gtime"
@@ -17,6 +17,5 @@ func GetQuarter(t *gtime.Time) int {
 	} else if month > 9 && month <= 12 {
 		return 4
 	}
-
 	return 0
 }
