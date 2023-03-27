@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0c9e9a6b-41b3-4afb-aa2e-0539e27a9fab" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/utility/internal/utils/utils_time.go" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/utility/format_utils/format_time.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utility/format/format_time.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utility/internal/utils/command.go" beforeDir="false" afterPath="$PROJECT_DIR$/utility/internal/utils/command.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utility/internal/utils/utils_str.go" beforeDir="false" afterPath="$PROJECT_DIR$/utility/internal/utils/utils_str.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,12 +36,8 @@
               <option name="branches">
                 <list>
                   <RecentBranch>
-                    <option name="branchName" value="ffff" />
-                    <option name="lastUsedInstant" value="1679919686" />
-                  </RecentBranch>
-                  <RecentBranch>
-                    <option name="branchName" value="pref-format" />
-                    <option name="lastUsedInstant" value="1679919598" />
+                    <option name="branchName" value="feat-format" />
+                    <option name="lastUsedInstant" value="1679920053" />
                   </RecentBranch>
                   <RecentBranch>
                     <option name="branchName" value="dev" />
