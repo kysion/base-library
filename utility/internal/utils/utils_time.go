@@ -5,6 +5,7 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
+// GetQuarter 传入指定的时间，返回具体的季度
 func GetQuarter(t *gtime.Time) int {
 	month := gconv.Int(t.Format("n"))
 	if month <= 3 {
