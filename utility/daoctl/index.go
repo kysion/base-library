@@ -52,6 +52,7 @@ func GetAll[T any](db *gdb.Model, info *base_model.Pagination) (response *base_m
     }, nil
 }
 
+// Query IsExport参数为true不进行分页导出，反之会进行分页导出
 func Query[T any](db *gdb.Model, searchFields *base_model.SearchParams, IsExport bool) (response *base_model.CollectRes[T], err error) {
     if searchFields == nil {
         searchFields = &base_model.SearchParams{}
@@ -61,9 +62,12 @@ func Query[T any](db *gdb.Model, searchFields *base_model.SearchParams, IsExport
     queryDb, _ := internal.MakeBuilder(db, searchFields.Filter)
     queryDb = internal.MakeOrderBy(queryDb, searchFields.OrderBy)
 
+	if searchFields.PageNum < 1 {
+		searchFields.PageNum = 1
+	}
+
     if searchFields.PageSize == 0 {
         searchFields.PageSize = 20
-        searchFields.PageNum = 1
     }
 
     entities := make([]T, 0)
