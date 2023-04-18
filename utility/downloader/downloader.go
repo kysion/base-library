@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gogf/gf/v2/os/gfile"
-	"github.com/kysion/base-library/utility/funs"
+	"github.com/kysion/base-library/utility/base_funs"
 	"io"
 	"log"
 	"net/http"
@@ -107,13 +107,13 @@ func (d *Downloader) GetFileSize() (uint64, error) {
 	}
 
 	fileSize := resp.ContentLength
-	log.Printf("要下载的文件大小为 %v\n", funs.ByteCountIEC(fileSize))
+	log.Printf("要下载的文件大小为 %v\n", base_funs.ByteCountIEC(fileSize))
 	return uint64(fileSize), err
 }
 
 func (d *Downloader) downloadPart(p FilePart) error {
 	client := http.Client{}
-	log.Printf("开始[%d]下载from:%v to:%v\n", p.Index, funs.ByteCountIEC(p.Start), funs.ByteCountIEC(p.End))
+	log.Printf("开始[%d]下载from:%v to:%v\n", p.Index, base_funs.ByteCountIEC(p.Start), base_funs.ByteCountIEC(p.End))
 	req, err := http.NewRequest("GET", d.url, nil)
 	if err != nil {
 		return err

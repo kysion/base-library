@@ -84,20 +84,24 @@ func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Mo
 							db = db.WhereOrLike(field.Field, field.Value)
 						}
 					} else {
-						if field.Where == ">" {
-							db = db.WhereOrGT(field.Field, field.Value)
-						} else if field.Where == ">=" {
-							db = db.WhereOrGTE(field.Field, field.Value)
-						} else if field.Where == "<" {
-							db = db.WhereOrLT(field.Field, field.Value)
-						} else if field.Where == "<=" {
-							db = db.WhereOrLTE(field.Field, field.Value)
-						} else if field.Where == "<>" {
-							db = db.WhereOrNotIn(field.Field, field.Value)
-						} else if field.Where == "=" {
-							db = db.WhereOr(field.Field, field.Value)
+						if gstr.Contains(field.Field, "&") {
+							db = db.Wheref(field.Field+" "+field.Where+" ?", gconv.String(field.Value))
 						} else {
-							return nil, gerror.New("查询条件参数错误")
+							if field.Where == ">" {
+								db = db.WhereOrGT(field.Field, field.Value)
+							} else if field.Where == ">=" {
+								db = db.WhereOrGTE(field.Field, field.Value)
+							} else if field.Where == "<" {
+								db = db.WhereOrLT(field.Field, field.Value)
+							} else if field.Where == "<=" {
+								db = db.WhereOrLTE(field.Field, field.Value)
+							} else if field.Where == "<>" {
+								db = db.WhereOrNotIn(field.Field, field.Value)
+							} else if field.Where == "=" {
+								db = db.WhereOr(field.Field, field.Value)
+							} else {
+								return nil, gerror.New("查询条件参数错误")
+							}
 						}
 					}
 				} else {
@@ -126,20 +130,24 @@ func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Mo
 							db = db.WhereLike(field.Field, gconv.String(field.Value))
 						}
 					} else {
-						if field.Where == ">" {
-							db = db.WhereGT(field.Field, field.Value)
-						} else if field.Where == ">=" {
-							db = db.WhereGTE(field.Field, field.Value)
-						} else if field.Where == "<" {
-							db = db.WhereLT(field.Field, field.Value)
-						} else if field.Where == "<=" {
-							db = db.WhereLTE(field.Field, field.Value)
-						} else if field.Where == "<>" {
-							db = db.WhereNotIn(field.Field, field.Value)
-						} else if field.Where == "=" {
-							db = db.Where(field.Field, field.Value)
+						if gstr.Contains(field.Field, "&") {
+							db = db.Wheref(field.Field+" "+field.Where+" ?", gconv.String(field.Value))
 						} else {
-							return nil, gerror.New("查询条件参数错误")
+							if field.Where == ">" {
+								db = db.WhereGT(field.Field, field.Value)
+							} else if field.Where == ">=" {
+								db = db.WhereGTE(field.Field, field.Value)
+							} else if field.Where == "<" {
+								db = db.WhereLT(field.Field, field.Value)
+							} else if field.Where == "<=" {
+								db = db.WhereLTE(field.Field, field.Value)
+							} else if field.Where == "<>" {
+								db = db.WhereNotIn(field.Field, field.Value)
+							} else if field.Where == "=" {
+								db = db.Where(field.Field, field.Value)
+							} else {
+								return nil, gerror.New("查询条件参数错误")
+							}
 						}
 					}
 				}
