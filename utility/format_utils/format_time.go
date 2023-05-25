@@ -3,6 +3,7 @@ package format_utils
 import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
+	"time"
 )
 
 // GetQuarter 传入指定的时间，返回具体的季度
@@ -18,4 +19,11 @@ func GetQuarter(t *gtime.Time) int {
 		return 4
 	}
 	return 0
+}
+
+// SecondToDuration 将秒数转化为 duration 对象
+func SecondToDuration(second int) time.Duration {
+	t := time.Duration(second) * time.Second
+
+	return t
 }
