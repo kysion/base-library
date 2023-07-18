@@ -3,7 +3,7 @@ module github.com/kysion/base-library
 go 1.19
 
 require (
-	github.com/gogf/gf/v2 v2.4.1
+	github.com/gogf/gf/v2 v2.5.0
 	github.com/joho/godotenv v1.4.0
 	golang.org/x/crypto v0.5.0
 )
