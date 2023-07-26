@@ -1,7 +1,7 @@
 package base_tree
 
 // Filter 过滤并构建树List
-func Filter[T any](arr []*T, f func(item *T) bool) (list []*T) {
+func Filter[T any](arr []T, f func(item T) bool) (list []T) {
 	for _, el := range arr {
 		// 当Child的FacterId == FacterId
 		if f(el) {
@@ -13,19 +13,19 @@ func Filter[T any](arr []*T, f func(item *T) bool) (list []*T) {
 
 type Tree[T any] interface {
 	// GetIsEqual 用于判断child.ParentId是否等于facter.Id父ID
-	GetIsEqual(father *T, child *T) bool
+	GetIsEqual(father T, child T) bool
 	// SetChild 将子树List设置到父树
-	SetChild(father *T, branchArr []*T)
+	SetChild(father T, branchArr []T)
 	// RetFather 用于判断father.ID是否等于指定ParentID，可作为递归使用场景的退出条件
-	RetFather(father *T) bool
+	RetFather(father T) bool
 }
 
-func ToTree[T any](list []*T, fun Tree[T]) []*T {
+func ToTree[T any](list []T, fun Tree[T]) []T {
 
 	// 外层递归，返回Tree树结构 （父 + 子）
-	return Filter(list, func(father *T) bool {
+	return Filter(list, func(father T) bool {
 		// 内层递归，用于构建子树，
-		branchArr := Filter(list, func(childId *T) bool {
+		branchArr := Filter(list, func(childId T) bool {
 			// 内层递归构建树List的条件：fun.GeteIsQual(father, childId)，当Child的FacterId == FacterId的时候
 			return fun.GetIsEqual(father, childId)
 		})
