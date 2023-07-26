@@ -6,6 +6,8 @@ require (
 	github.com/gogf/gf/v2 v2.5.0
 	github.com/joho/godotenv v1.4.0
 	golang.org/x/crypto v0.5.0
+	github.com/yitter/idgenerator-go v1.3.3
+
 )
 
 require (
