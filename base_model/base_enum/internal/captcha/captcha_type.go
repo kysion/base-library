@@ -2,7 +2,7 @@ package sys_enum_captcha
 
 import "github.com/kysion/base-library/utility/enum"
 
-// 验证码类型：1注册，2登录，4找回用户名/修改用户名，8找回密码/重置密码，16设置手机号码
+// 验证码类型：1注册，2登录，4找回用户名/修改用户名，8找回密码/重置密码，16设置手机号码 ，32设置邮箱
 
 type CaptchaTypeEnum enum.IEnumCode[int]
 
@@ -12,6 +12,7 @@ type captchaType struct {
 	SetUserName CaptchaTypeEnum
 	SetPassword CaptchaTypeEnum
 	SetMobile   CaptchaTypeEnum
+	SetMail     CaptchaTypeEnum
 }
 
 var CaptchaType = captchaType{
@@ -20,6 +21,7 @@ var CaptchaType = captchaType{
 	SetUserName: enum.New[CaptchaTypeEnum](4, "setUserName"),
 	SetPassword: enum.New[CaptchaTypeEnum](8, "setPassword"),
 	SetMobile:   enum.New[CaptchaTypeEnum](16, "setMobile"),
+	SetMail:     enum.New[CaptchaTypeEnum](32, "setMail"),
 	// 可拓展.....
 }
 
@@ -38,6 +40,9 @@ func (e captchaType) New(code int, description string) CaptchaTypeEnum {
 	}
 	if (code & e.SetMobile.Code()) == e.SetMobile.Code() {
 		return e.SetMobile
+	}
+	if (code & e.SetMail.Code()) == e.SetMail.Code() {
+		return e.SetMail
 	}
 
 	return enum.New[CaptchaTypeEnum](code, description)
