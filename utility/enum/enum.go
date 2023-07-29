@@ -1,5 +1,10 @@
 package enum
 
+import (
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gconv"
+)
+
 type IEnumCodeInt interface {
 	Code() int
 	// Description returns the brief description for current code.
@@ -62,4 +67,21 @@ func NewWithData[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int |
 		description: description,
 	}
 	return result.(*IEnumCodeWithData[TCode, TData])
+}
+
+func GetTypes[V uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | int8 | int16 | int32 | int64, T IEnumCode[V]](code V, enumOjb interface{}) []IEnumCode[V] {
+	typeMaps := gconv.Map(enumOjb)
+
+	result := make([]IEnumCode[V], 0)
+
+	for key, value := range typeMaps {
+		var item = typeMaps[key].(IEnumCode[V])
+		if code&item.Code() == item.Code() {
+			result = append(result, item)
+		}
+
+		g.Dump(key, value, item.Code())
+	}
+
+	return result
 }
