@@ -3,7 +3,6 @@
 .project
 .orig
 .swp
-.idea/
 .settings/
 .vscode/
 vendor/
@@ -21,4 +20,4 @@ temp/
 .env
 hack/config.yaml
 resources/upload
-.idea/
+.idea
