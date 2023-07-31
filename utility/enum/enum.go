@@ -109,6 +109,10 @@ func (e *enumType[TCode, TData]) Add(enumInfo ...IEnumCode[TCode]) bool {
 		}
 	}
 
+	if e.code == TCode(newCode) {
+		return false
+	}
+
 	e.code = TCode(newCode)
 
 	return true
