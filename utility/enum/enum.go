@@ -20,12 +20,16 @@ type IEnumCode[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | i
 	Code() TCode
 	// Description returns the brief description for current code.
 	Description() string
+	// Has 是否有 enumType, 多个则全部包含返回 true
+	Has(enumType ...IEnumCode[TCode]) bool
 }
 
 type IEnumCodeWithData[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | int8 | int16 | int32 | int64 | string, TData any] interface {
 	Code() TCode
 	Data() TData
 	Description() string
+	// Has 是否有 enumType, 多个则全部包含返回 true
+	Has(enumType ...IEnumCode[TCode]) bool
 }
 
 // EnumType [T any] is an implementer for interface Code for internal usage only.
@@ -48,6 +52,30 @@ func (e *enumType[TCode, TData]) Description() string {
 // Data returns the T data of current code.
 func (e *enumType[TCode, TData]) Data() TData {
 	return e.data
+}
+
+// Has 是否有 enumType, 多个则全部包含返回 true
+func (e *enumType[TCode, TData]) Has(enumInfo ...enumType[TCode, TData]) bool {
+	if len(enumInfo) <= 0 {
+		return false
+	}
+
+	for _, item := range enumInfo {
+		var codeAny any = item.code
+
+		_, ok := codeAny.(string)
+
+		if ok && item.code != e.code {
+			return false
+		}
+
+		localCode := gconv.Int64(item.code)
+		if gconv.Int64(e.code)&localCode != localCode {
+			return false
+		}
+	}
+
+	return true
 }
 
 func New[R IEnumCode[TCode], TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | int8 | int16 | int32 | int64 | string](code TCode, description string) R {
