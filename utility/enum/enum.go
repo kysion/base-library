@@ -22,6 +22,10 @@ type IEnumCode[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | i
 	Description() string
 	// Has 是否有 enumType, 多个则全部包含返回 true
 	Has(enumType ...IEnumCode[TCode]) bool
+	// Add 自减
+	Add(enumType ...IEnumCode[TCode]) bool
+	// Remove 自加
+	Remove(enumType ...IEnumCode[TCode]) bool
 }
 
 type IEnumCodeWithData[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | int8 | int16 | int32 | int64 | string, TData any] interface {
@@ -29,7 +33,11 @@ type IEnumCodeWithData[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 |
 	Data() TData
 	Description() string
 	// Has 是否有 enumType, 多个则全部包含返回 true
-	Has(enumType ...IEnumCode[TCode]) bool
+	Has(enumInfo ...IEnumCode[TCode]) bool
+	// Add 自减
+	Add(enumInfo ...IEnumCode[TCode]) bool
+	// Remove 自加
+	Remove(enumInfo ...IEnumCode[TCode]) bool
 }
 
 // EnumType [T any] is an implementer for interface Code for internal usage only.
@@ -55,26 +63,85 @@ func (e *enumType[TCode, TData]) Data() TData {
 }
 
 // Has 是否有 enumType, 多个则全部包含返回 true
-func (e *enumType[TCode, TData]) Has(enumInfo ...enumType[TCode, TData]) bool {
+func (e *enumType[TCode, TData]) Has(enumInfo ...IEnumCode[TCode]) bool {
 	if len(enumInfo) <= 0 {
 		return false
 	}
 
 	for _, item := range enumInfo {
-		var codeAny any = item.code
+		var codeAny any = item.Code()
 
 		_, ok := codeAny.(string)
 
-		if ok && item.code != e.code {
+		if ok && item.Code() != e.code {
 			return false
 		}
 
-		localCode := gconv.Int64(item.code)
+		localCode := gconv.Int64(item.Code())
 		if gconv.Int64(e.code)&localCode != localCode {
 			return false
 		}
 	}
 
+	return true
+}
+
+// Add 自加
+func (e *enumType[TCode, TData]) Add(enumInfo ...IEnumCode[TCode]) bool {
+	if len(enumInfo) <= 0 {
+		return false
+	}
+
+	var codeAny any = e.code
+
+	_, ok := codeAny.(string)
+
+	if ok {
+		return false
+	}
+
+	newCode := gconv.Int64(e.code)
+
+	for _, item := range enumInfo {
+		localCode := gconv.Int64(item.Code())
+		if gconv.Int64(e.code)&localCode != localCode {
+			newCode = newCode | localCode
+		}
+	}
+
+	e.code = TCode(newCode)
+
+	return true
+}
+
+// Remove 自减
+func (e *enumType[TCode, TData]) Remove(enumInfo ...IEnumCode[TCode]) bool {
+	if len(enumInfo) <= 0 {
+		return false
+	}
+
+	var codeAny any = e.code
+
+	_, ok := codeAny.(string)
+
+	if ok {
+		return false
+	}
+
+	newCode := gconv.Int64(e.code)
+
+	for _, item := range enumInfo {
+		localCode := gconv.Int64(item.Code())
+		if gconv.Int64(e.code)&localCode != localCode {
+			newCode = newCode & ^localCode
+		}
+	}
+
+	if e.code == TCode(newCode) {
+		return false
+	}
+
+	e.code = TCode(newCode)
 	return true
 }
 
