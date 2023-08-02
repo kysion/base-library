@@ -1,4 +1,4 @@
-package rule
+package base_rule
 
 import "github.com/gogf/gf/v2/text/gregex"
 
