@@ -6,6 +6,30 @@ import (
 	"time"
 )
 
+// GetWeekDay 传入指定的时间，返回具体是一周内的第几天
+func GetWeekDay(t *gtime.Time) int {
+	weekDay := t.Weekday().String()
+
+	switch weekDay {
+	case "Monday":
+		return 1
+	case "Tuesday":
+		return 2
+	case "Wednesday":
+		return 3
+	case "Thursday":
+		return 4
+	case "Friday":
+		return 5
+	case "Saturday":
+		return 6
+	case "Sunday":
+		return 7
+	}
+
+	return 0
+}
+
 // GetQuarter 传入指定的时间，返回具体的季度
 func GetQuarter(t *gtime.Time) int {
 	month := gconv.Int(t.Format("n"))
