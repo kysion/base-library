@@ -27,9 +27,8 @@ type IPermission interface {
 	SetItems(val []IPermission) IPermission
 }
 
-var PFactory func() IPermission
-
-var Factory = PFactory
+// Factory 需要在引用的业务项目中重新对 Factory 变量进行赋值
+var Factory func() IPermission
 
 // New 构造权限信息
 func New(id int64, identifier string, name string, description ...string) IPermission {
