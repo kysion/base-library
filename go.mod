@@ -3,10 +3,10 @@ module github.com/kysion/base-library
 go 1.21
 
 require (
-	github.com/gogf/gf/v2 v2.5.6
+	github.com/gogf/gf/v2 v2.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/yitter/idgenerator-go v1.3.3
-	golang.org/x/crypto v0.15.0
+	golang.org/x/crypto v0.17.0
 
 )
 
@@ -15,7 +15,7 @@ require (
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/go-logr/logr v1.3.0 // indirect
+	github.com/go-logr/logr v1.4.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/grokify/html-strip-tags-go v0.1.0 // indirect
@@ -29,8 +29,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
