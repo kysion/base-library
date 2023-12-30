@@ -3,6 +3,7 @@ package base_funs
 import (
 	"context"
 	"fmt"
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/kysion/base-library/base_model"
 	"reflect"
@@ -16,21 +17,42 @@ func If[R any](condition bool, trueVal, falseVal R) R {
 	}
 }
 
-func SearchFilterEx(search base_model.SearchParams, fields ...string) *base_model.SearchParams {
+// SearchFilterEx 支持增加拓展字段，会提炼拓展字段的最新过滤题条件模型返回，并支持从原始的过滤模型剔除不需要的条件
+func SearchFilterEx(search *base_model.SearchParams, fields ...string) *base_model.SearchParams {
 	result := &base_model.SearchParams{}
 	newFilter := make([]base_model.FilterInfo, 0)
+	newSearchFilter := make([]base_model.FilterInfo, 0)
+	newSearchFilterStr := garray.NewStrArray()
+
 	for _, info := range search.Filter {
-		count := len(result.Filter)
+		//count := len(result.Filter)
+		ss := true
 		for _, field := range fields {
-			if gstr.ToLower(info.Field) == gstr.ToLower(field) {
-				newFilter = append(result.Filter, info)
+			split := gstr.Split(field, ".")
+			if gstr.ToLower(gstr.CaseSnake(split[0])) == gstr.ToLower(gstr.CaseSnake(info.Field)) && len(split) > 1 {
+				ss = false
+			}
+			if gstr.ToLower(gstr.CaseSnake(info.Field)) == gstr.ToLower(gstr.CaseSnake(split[0])) {
+				newFilter = append(newFilter, info)
+				break
+			}
+
+		}
+		//if count == len(result.Filter) {
+		//  newFilter = append(newFilter, info)
+		//}
+    
+		if ss {
+			if !newSearchFilterStr.Contains(info.Field) {
+				newSearchFilterStr.Append(info.Field)
+				newSearchFilter = append(newSearchFilter, info)
 			}
 		}
-		if count == len(result.Filter) {
-			newFilter = append(newFilter, info)
-		}
 	}
-	search.Filter = newFilter
+
+	search.Filter = newSearchFilter
+	result.Filter = newFilter
+
 	return result
 }
 
