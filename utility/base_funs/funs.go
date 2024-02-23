@@ -7,6 +7,8 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/kysion/base-library/base_model"
 	"reflect"
+	"sync"
+	"time"
 )
 
 func If[R any](condition bool, trueVal, falseVal R) R {
@@ -41,7 +43,7 @@ func SearchFilterEx(search *base_model.SearchParams, fields ...string) *base_mod
 		//if count == len(result.Filter) {
 		//  newFilter = append(newFilter, info)
 		//}
-    
+
 		if ss {
 			if !newSearchFilterStr.Contains(info.Field) {
 				newSearchFilterStr.Append(info.Field)
@@ -118,7 +120,7 @@ func AttrBuilder[T any, TP any](ctx context.Context, key string, builder ...func
 	)
 }
 
-//union_main_id::co_model.EmployeeRes::[]co_model.Team
+// union_main_id::co_model.EmployeeRes::[]co_model.Team
 func AttrMake[T any, TP any](ctx context.Context, key string, builder func() TP) {
 	key = key + "::" + reflect.ValueOf(new(T)).Type().String() + "::" + reflect.ValueOf(new(TP)).Type().String()
 	key = gstr.Replace(key, "*", "")
@@ -127,5 +129,22 @@ func AttrMake[T any, TP any](ctx context.Context, key string, builder func() TP)
 	data, has := v.(base_model.KeyValueT[string, func(data TP)])
 	if v != nil && has {
 		data.Value(builder())
+	}
+}
+
+// Debounce 防抖函数
+func Debounce(interval time.Duration) func(f func()) {
+	var l sync.Mutex
+	var timer *time.Timer
+
+	return func(f func()) {
+		l.Lock()
+		defer l.Unlock()
+		// 使用lock保证d.timer更新之前一定先Stop.
+
+		if timer != nil {
+			timer.Stop()
+		}
+		timer = time.AfterFunc(interval, f)
 	}
 }
