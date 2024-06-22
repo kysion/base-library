@@ -14,7 +14,9 @@ func MakeCountArr(db *gdb.Model, searchFields []base_model.FilterInfo) (total in
 	if err != nil {
 		return 0
 	}
-	count, _ := db.Count("1=1")
+	//ret := []gdb.Map{}
+	count := 0
+	db.ScanAndCount(nil,&count, false)
 	return gconv.Int64(count)
 }
 

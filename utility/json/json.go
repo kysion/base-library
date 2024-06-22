@@ -83,3 +83,17 @@ func NewDecoder(reader io.Reader) *json.Decoder {
 func Valid(data []byte) bool {
 	return json.Valid(data)
 }
+
+// unescapeJSON 去除json中的转义字符
+func UnescapeJSON(jsonStr string) (string, error) {
+	var data interface{}
+	err := json.Unmarshal([]byte(jsonStr), &data)
+	if err != nil {
+		return "", err
+	}
+	result, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return string(result), nil
+}

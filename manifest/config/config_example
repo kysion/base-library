@@ -1,19 +1,20 @@
 server:
   address: "127.0.0.1:7778"
-  serverRoot: "/resources"
+  serverRoot: "/resource"
   dumpRouterMap: false
   routeOverWrite: true
   accessLogEnabled: false
   SessionIdName: "KysionBaseLibrarySessionId"
   sessionPath: "temp/sessions/base_library_sessions"    # Session文件存储目录
-  openapiPath: "/openapi/base_library.json"
-  swaggerPath: "/docs/base_library"
+  openapiPath: "/api/openapi.json"
+  swaggerPath: "/api/docs"
+  swaggerJsURL: "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js" # 自定义 文档 JS 镜像地址，需要 gf 2.6.0 以上版本才支持
 
 service:
   # 用户表ID生成器，分布式终端标识，取值范围 1 ~ 63，解决分布式多服务横向扩展时保证生成的ID不重复
   idGeneratorWorkerId: 1
   # 接口前缀
-  apiPrefix: "/kysion/base_library"
+  apiPrefix: "/api"
   # Token Sign Key
   tokenSignKey: "KysionBaseLibraryProTokenSignKey"
   # 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营商；独立调用创建用户、查询用户信息等相关接口时强制过滤类型
@@ -54,7 +55,7 @@ upload:
   # 用戶1分钟内限制上传最大文件数量
   fileMaxUploadCountMinute: 10
   # 文件上传的默认保存路径
-  path: "resources/upload"
+  path: "resource/upload"
   temp: "temp/upload"
 
 # 数据库连接配置
@@ -66,7 +67,7 @@ database:
     ctxKeys: ["RequestId"]
 
   default:
-    link: "pgsql:user=kysion password=kysiondb host=182.43.195.225 port=15432 dbname=gf-admin sslmode=disable"
+    link: "pgsql:user=username password=password host=127.0.0.1 port=15432 dbname=dbname sslmode=disable"
     debug: true
 
 redis:
