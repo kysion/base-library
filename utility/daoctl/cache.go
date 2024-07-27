@@ -58,7 +58,7 @@ func cleanCache[T gdb.HookInsertInput | gdb.HookUpdateInput | gdb.HookDeleteInpu
 
 		cacheKeys, _ := db.GetCache().KeyStrings(ctx)
 		for _, key := range cacheKeys {
-			if gstr.HasPrefix(key, table) || gstr.HasPrefix(key, "SelectCache:default@#"+table) {
+			if gstr.HasPrefix(key, table) || gstr.HasPrefix(key, "SelectCache:"+table) || gstr.HasPrefix(key, "SelectCache:default@#"+table) {
 				db.GetCache().Remove(db.GetCtx(), key)
 			}
 		}
