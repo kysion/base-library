@@ -35,7 +35,8 @@ type BaseHook[T any, F any] struct {
 }
 
 type Option struct {
-	Data any // 需要广播的数据
+	Data       any  // 需要广播的数据
+	NetMessage bool // 是否是网络消息
 }
 
 func (s *BaseHook[T, F]) GetBusinessType() base_enum.HookBusinessType {
@@ -47,6 +48,8 @@ func (s *BaseHook[T, F]) GetBusinessType() base_enum.HookBusinessType {
 func (s *BaseHook[T, F]) InstallHook(filter T, hookFunc F) {
 	item := base_model.KeyValueT[T, F]{Key: filter, Value: hookFunc}
 
+	// 安装的时候就注册Hook消息
+	RegisterHookMessage(s)
 	s.hookArr.Append(item)
 }
 
@@ -78,16 +81,16 @@ func (s *BaseHook[T, F]) Iterator(f func(key T, value F), options ...Option) {
 		return true
 	})
 
-	if len(options) <= 0 || options[0].Data == nil {
+	if len(options) <= 0 || options[0].Data == nil || options[0].NetMessage == false {
 		return
 	}
 
 	_ = g.Try(context.Background(), func(ctx context.Context) {
 		var businessType F
-		s2 := reflect.TypeOf(businessType).String()
-		fmt.Println(s2)
+		typeEnumStr := reflect.TypeOf(businessType).String()
+		fmt.Println(typeEnumStr)
 
-		s.publish(options[0], base_enum.Hook.BusinessType.New(s2))
+		s.publish(options[0], base_enum.Hook.BusinessType.New(typeEnumStr))
 	})
 }
 
@@ -107,7 +110,7 @@ func (s *BaseHook[T, F]) Where(filter T, f func(filter T, key T) bool) []F {
 	return result
 }
 
-// HookDistribution 开启一个websocket服务，用于接收广播消息
+// HookDistribution 开启一个websocket服务，用于接收广播消息，需要在路由注册时候注册
 func HookDistribution(r *ghttp.Request) {
 	ws, err := r.WebSocket()
 	if err != nil {
@@ -138,16 +141,18 @@ func HookDistribution(r *ghttp.Request) {
 				Port: gconv.Int(addr[1]),
 			}
 
+			// 处理广播消息
 			Gateway().BroadcastMessage(data)
 		}
 	}
 }
 
+// 发送消息给对应的服务List
 func (s *BaseHook[T, F]) publish(dataInfo interface{}, businessType base_enum.HookBusinessType) {
 	/*
-			解决跨进城Hook订阅不了问题的方案：
+			跨进程Hook订阅的方案：
 				1、获取配置的服务注册表
-				2、按照配置服务，通过ws协议连接到对应的服务 (TODO 重连检测机制)
+				2、按照配置服务，通过ws协议连接到对应的服务 (重连检测机制)
 				3、发送消息给对应的服务
 		       	4、读取服务响应的消息 （可选）
 	*/
@@ -163,7 +168,8 @@ func (s *BaseHook[T, F]) publish(dataInfo interface{}, businessType base_enum.Ho
 	// 2、按照配置服务，通过ws协议连接到对应的服务
 	serviceArr.Iterator(func(k int, v string) bool {
 		// ws链接服务
-		urlStr := "ws://" + v + "/ws"
+		wsPath := g.Cfg().MustGet(context.Background(), "service.wsPath", "/ws").String()
+		urlStr := "ws://" + v + wsPath // 例如：ws://127.0.0.1:7778/ws
 		fmt.Println(urlStr)
 
 		var conn *websocket.Conn
@@ -195,7 +201,6 @@ func (s *BaseHook[T, F]) publish(dataInfo interface{}, businessType base_enum.Ho
 		}
 
 		//defer conn.Close()
-
 		// 4、异步读取服务响应的消息 （可选）
 		//go func() {
 		//	_, msg, _ := conn.ReadMessage()

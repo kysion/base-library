@@ -43,6 +43,13 @@ service:
 #    - name: sys_user
 #      seconds: 3600
 #      force: false
+  # 服务器地址数组,用于跨进程通信，注意不能写本服务的地址和端口
+  hostAddressArr: ["127.0.0.1:7778", "127.0.0.1:7779", "127.0.0.1:7780"]
+  # ws协议的路径 ws://127.0.0.1:7778/ws
+  wsPath: "/ws"
+
+
+
 # 日志配置
 logger:
   level : "all"
