@@ -35,8 +35,9 @@ type BaseHook[T any, F any] struct {
 }
 
 type Option struct {
-	Data       any  // 需要广播的数据
-	NetMessage bool // 是否是网络消息
+	Data        any    // 需要广播的数据
+	HookTypeStr string // Hook类型，通常是HookFunc的名称
+	NetMessage  bool   // 是否是网络消息
 }
 
 func (s *BaseHook[T, F]) GetBusinessType() base_enum.HookBusinessType {
@@ -75,6 +76,7 @@ func (s *BaseHook[T, F]) ClearAllHook() {
 
 // Iterator 遍历Hook
 func (s *BaseHook[T, F]) Iterator(f func(key T, value F), options ...Option) {
+
 	s.hookArr.Iterator(func(key int, value interface{}) bool {
 		item := value.(base_model.KeyValueT[T, F])
 		f(item.Key, item.Value)
@@ -84,6 +86,9 @@ func (s *BaseHook[T, F]) Iterator(f func(key T, value F), options ...Option) {
 	if len(options) <= 0 || options[0].Data == nil || options[0].NetMessage == false {
 		return
 	}
+
+	var valueObj F
+	options[0].HookTypeStr = reflect.TypeOf(valueObj).String()
 
 	_ = g.Try(context.Background(), func(ctx context.Context) {
 		var businessType F
