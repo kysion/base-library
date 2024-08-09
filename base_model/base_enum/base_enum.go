@@ -6,10 +6,10 @@ import (
 )
 
 type (
-	CaptchaType sys_enum_captcha.CaptchaTypeEnum
+	CaptchaType = sys_enum_captcha.CaptchaTypeEnum
 
 	// HookBusinessType Hook业务类型
-	HookBusinessType sys_enum_hook.BusinessTypeEnum
+	HookBusinessType = sys_enum_hook.BusinessTypeEnum
 )
 
 var (
