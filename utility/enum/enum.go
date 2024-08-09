@@ -7,17 +7,20 @@ import (
 
 type IEnumCodeInt interface {
 	Code() int
+	ToMap() map[string]any
 	// Description returns the brief description for current code.
 	Description() string
 }
 type IEnumCodeStr interface {
 	Code() string
+	ToMap() map[string]any
 	// Description returns the brief description for current code.
 	Description() string
 }
 
 type IEnumCode[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | int8 | int16 | int32 | int64 | string] interface {
 	Code() TCode
+	ToMap() map[string]any
 	// Description returns the brief description for current code.
 	Description() string
 	// Has 是否有 enumType, 多个则全部包含返回 true
@@ -31,6 +34,7 @@ type IEnumCode[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | i
 type IEnumCodeWithData[TCode uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | int8 | int16 | int32 | int64 | string, TData any] interface {
 	Code() TCode
 	Data() TData
+	ToMap() map[string]any
 	Description() string
 	// Has 是否有 enumType, 多个则全部包含返回 true
 	Has(enumInfo ...IEnumCode[TCode]) bool
@@ -60,6 +64,14 @@ func (e *enumType[TCode, TData]) Description() string {
 // Data returns the T data of current code.
 func (e *enumType[TCode, TData]) Data() TData {
 	return e.data
+}
+
+func (e *enumType[TCode, TData]) ToMap() map[string]any {
+	return map[string]any{
+		"code":        e.code,
+		"description": e.description,
+		"data":        e.data,
+	}
 }
 
 // Has 是否有 enumType, 多个则全部包含返回 true

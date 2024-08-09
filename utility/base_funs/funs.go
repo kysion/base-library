@@ -132,8 +132,20 @@ func AttrMake[T any, TP any](ctx context.Context, key string, builder func() TP)
 	}
 }
 
+/*
+ Debounce 防抖函数
+	该函数是一个防抖函数，用于延迟函数的执行。
+	它返回一个闭包函数，接收一个函数参数f。
+	在闭包函数中，通过互斥锁保证并发安全，停止之前的定时器，创建一个新的定时器，并在指定的时间间隔后执行函数f。
+	这样可以避免在短时间内频繁调用函数f，达到防抖的效果。
+ 通俗理解：
+	可以想象成一个需要“冷静一下”的机制。
+	就好比你在不停地按一个按钮，但系统只在你最后一次按完并经过一段安静时间（防抖时间间隔）后，才真正去执行相应的操作。
+	在这期间，不管你按得多频繁，只有最后一次按下去且等待一段时间没再按，才会触发实际动作。
+*/
 // Debounce 防抖函数
-func Debounce(interval time.Duration) func(f func()) {
+func Debounce(interval time.Duration) func(f func()) { // interval: 防抖时间间隔
+
 	var l sync.Mutex
 	var timer *time.Timer
 
@@ -148,3 +160,33 @@ func Debounce(interval time.Duration) func(f func()) {
 		timer = time.AfterFunc(interval, f)
 	}
 }
+
+//// Debounce 防抖函数 （优化版）
+//func Debounce(interval time.Duration) func(f func()) {
+//	var l sync.Mutex
+//	ctx, cancel := context.WithCancel(context.Background())
+//	var timer *time.Timer
+//
+//	fmt.Println(ctx)
+//	return func(f func()) {
+//		l.Lock()
+//		defer l.Unlock()
+//
+//		// 使用lock保证d.timer更新之前一定先Stop.
+//		if timer != nil {
+//			timer.Stop()
+//			timer = nil
+//		}
+//		//timer = time.AfterFunc(interval,f)
+//		timer = time.AfterFunc(interval, func() {
+//			// 在函数内部释放context，确保资源可以被清理
+//			cancel()
+//			f()
+//		})
+//
+//		// 立即取消context以停止旧的timer（如果存在），这有助于减少资源泄露
+//		// 注意：这并不能保证timer在启动前一定被取消，因此仍存在一定的竞争条件
+//		cancel()
+//		ctx, cancel = context.WithCancel(context.Background())
+//	}
+//}
