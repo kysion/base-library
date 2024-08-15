@@ -11,7 +11,7 @@ import (
 	"unsafe"
 )
 
-// 定义一个钩子处理程序，用于处理不同类型的数据库操作。
+// HookHandler 定义一个钩子处理程序，用于处理不同类型的数据库操作。
 // 该处理程序通过清洁缓存来响应更新、插入和删除操作，
 // 并通过查询输入的Next方法来响应选择操作。
 var HookHandler = gdb.HookHandler{
