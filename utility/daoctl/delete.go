@@ -3,7 +3,6 @@ package daoctl
 import (
 	"fmt"
 	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
 // Delete 删除数据库中的记录。
@@ -20,7 +19,7 @@ import (
 // 它将返回受影响的行数，否则将返回遇到的错误。
 func Delete(model *gdb.Model) (rowsAffected int64, err error) {
 	// 对模型执行额外的处理，可能是添加或修改删除条件。
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// 尝试根据模型删除数据库中的记录。
 	result, err := model.Delete()
@@ -50,7 +49,7 @@ func DeleteWithError(model *gdb.Model) (rowsAffected int64, err error) {
 	}
 
 	// 执行 ExecExWhere 并检查返回值
-	updatedModel := dao_interface.ExecExWhere(model)
+	updatedModel := ExecExWhere(model)
 	if updatedModel == nil {
 		return 0, fmt.Errorf("ExecExWhere returned nil")
 	}

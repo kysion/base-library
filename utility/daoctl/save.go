@@ -2,7 +2,6 @@ package daoctl
 
 import (
 	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
 // Save 保存模型数据。
@@ -19,7 +18,7 @@ import (
 // - rowsAffected: 受影响的行数，成功时为实际受影响的行数，失败时为 0。
 func Save(model *gdb.Model, data ...interface{}) (rowsAffected int64) {
 	// 执行扩展的条件查询，以确保数据满足保存的条件。
-	model = dao_interface.ExecExWhere(model, data...)
+	model = ExecExWhere(model, data...)
 
 	// 尝试保存模型数据。
 	result, err := model.Save(data...)
@@ -47,7 +46,7 @@ func Save(model *gdb.Model, data ...interface{}) (rowsAffected int64) {
 // - err: 保存操作中可能出现的错误，如果没有错误，则为nil。
 func SaveWithError(model *gdb.Model, data ...interface{}) (rowsAffected int64, err error) {
 	// 对模型执行额外的处理，这是为了确保数据在保存前满足特定条件或逻辑。
-	model = dao_interface.ExecExWhere(model, data...)
+	model = ExecExWhere(model, data...)
 
 	// 尝试保存模型数据。
 	result, err := model.Save(data...)

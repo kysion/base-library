@@ -2,7 +2,6 @@ package daoctl
 
 import (
 	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
 // Insert 执行插入操作，并返回影响的行数。
@@ -11,7 +10,7 @@ import (
 // 返回值rowsAffected表示插入操作影响的行数。
 func Insert(model *gdb.Model, data ...interface{}) (rowsAffected int64) {
 	// 对model应用ExecExWhere处理，以便进行额外的条件筛选或修改。
-	model = dao_interface.ExecExWhere(model, data...)
+	model = ExecExWhere(model, data...)
 
 	// 执行插入操作，并捕获可能的错误。
 	result, err := model.Insert(data...)
@@ -42,7 +41,7 @@ func Insert(model *gdb.Model, data ...interface{}) (rowsAffected int64) {
 func InsertWithError(model *gdb.Model, data ...interface{}) (rowsAffected int64, err error) {
 	// 使用传入的data参数执行一个带有条件的删除操作。
 	// 这一步是为了确保在插入之前，根据提供的数据条件删除可能存在的旧数据。
-	model = dao_interface.ExecExWhere(model, data...)
+	model = ExecExWhere(model, data...)
 
 	// 尝试使用model插入data参数表示的数据。
 	// 这一步是实际的数据插入操作，如果数据格式或数据库约束条件不满足，可能会产生错误。
@@ -71,7 +70,7 @@ func InsertWithError(model *gdb.Model, data ...interface{}) (rowsAffected int64,
 //	rowsAffected: 受影响的行数，即成功插入的新数据项的数量。
 func InsertIgnore(model *gdb.Model, data ...interface{}) (rowsAffected int64) {
 	// 使用 ExecExWhere 方法对 model 进行额外的 WHERE 条件筛选，以确保数据的唯一性。
-	model = dao_interface.ExecExWhere(model, data...)
+	model = ExecExWhere(model, data...)
 
 	// 使用 InsertIgnore 方法尝试插入数据，这会自动忽略已存在的数据。
 	result, err := model.InsertIgnore(data...)
@@ -93,7 +92,7 @@ func InsertIgnore(model *gdb.Model, data ...interface{}) (rowsAffected int64) {
 // 返回值 rowsAffected 表示插入操作受影响的行数，err 表示插入操作过程中可能发生的错误。
 func InsertIgnoreWithError(model *gdb.Model, data ...interface{}) (rowsAffected int64, err error) {
 	// ExecExWhere 方法用于执行一个排除条件的查询，这里是为了在插入之前进行一些预处理操作。
-	model = dao_interface.ExecExWhere(model, data...)
+	model = ExecExWhere(model, data...)
 
 	// 尝试执行插入操作，这里使用的是 Model.Insert 方法，它允许插入多条记录。
 	result, err := model.Insert(data...)

@@ -2,7 +2,6 @@ package daoctl
 
 import (
 	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
 // Update 根据给定的条件更新模型，并返回受影响的行数。
@@ -11,7 +10,7 @@ import (
 // 返回值rowsAffected是更新操作影响的行数。
 func Update(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64) {
 	// 使用ExecExWhere函数执行带有条件的更新操作。
-	model = dao_interface.ExecExWhere(model, dataAndWhere...)
+	model = ExecExWhere(model, dataAndWhere...)
 
 	// 调用model的Update方法进行更新操作，返回更新结果和可能的错误。
 	result, err := model.Update(dataAndWhere...)
@@ -39,7 +38,7 @@ func Update(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64) 
 //	err: 更新操作过程中可能产生的错误。
 func UpdateWithError(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64, err error) {
 	// 执行可能的额外条件（如软删除等）。
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// 执行更新操作。
 	result, err := model.Update(dataAndWhere...)

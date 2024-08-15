@@ -1,13 +1,9 @@
 package daoctl
 
 import (
-	"context"
-	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
-	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 	"github.com/kysion/base-library/utility/daoctl/internal"
 	"math"
 )
@@ -55,7 +51,7 @@ func GetByIdWithError[T any](model *gdb.Model, id int64) (*T, error) {
 // - err: 错误信息，如果查询过程中发生错误，则返回该错误。
 func Find[T any](model *gdb.Model, orderBy []base_model.OrderBy, searchFields ...base_model.FilterInfo) (response *base_model.CollectRes[T], err error) {
 	// ExecExWhere 执行动态的 where 条件查询，用于在查询前对 model 进行筛选。
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// 使用 Query 函数执行实际的查询操作，传入的参数定义了查询的详细要求，如过滤条件、分页和排序。
 	// 这里将查询设置为从第一页开始，且不进行分页（PageSize为-1）。
@@ -80,7 +76,7 @@ func Find[T any](model *gdb.Model, orderBy []base_model.OrderBy, searchFields ..
 // - err: 查询过程中可能发生的错误。
 func GetAll[T any](model *gdb.Model, info *base_model.Pagination) (response *base_model.CollectRes[*T], err error) {
 	// 对模型应用额外的查询条件。
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// 计算满足条件的总记录数。
 	total, err := model.Count()
@@ -123,7 +119,7 @@ func GetAll[T any](model *gdb.Model, info *base_model.Pagination) (response *bas
 // - err: 执行查询过程中可能发生的错误。
 func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExport bool) (response *base_model.CollectRes[T], err error) {
 	// 对模型执行预处理，可能包括设置默认的查询条件等。
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// 如果没有提供搜索参数，则初始化一个默认的搜索参数对象。
 	if searchFields == nil {
@@ -164,78 +160,4 @@ func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExp
 	}
 
 	return response, nil
-}
-
-var enableOrmCache = true
-
-// EnableOrmCache 启用所有的ORM缓存。
-func EnableOrmCache() {
-	enableOrmCache = true
-}
-
-// DisabledOrmCache 禁用所有的ORM缓存。
-func DisabledOrmCache() {
-	enableOrmCache = false
-}
-
-// NewDaoConfig 创建并初始化一个DaoConfig实例。
-// 参数:
-// - ctx: 上下文对象，用于传递请求范围的数据。
-// - dao: 实现了IDao接口的对象。
-// - cacheOption: 可选的缓存配置。
-// 返回值:
-// - 初始化后的DaoConfig实例。
-func NewDaoConfig(ctx context.Context, dao dao_interface.IDao, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
-	result := dao_interface.DaoConfig{
-		Dao:   dao,
-		DB:    dao.DB(),
-		Table: dao.Table(),
-		Group: dao.Group(),
-	}
-
-	// 根据数据访问对象（DAO）的表名，检查是否存在扩展查询条件。
-	// 如果扩展查询条件映射不为空，并且针对当前DAO表的扩展查询条件存在，
-	// 则将这些扩展查询条件应用到结果对象上。
-	if dao_interface.ExtModelMap != nil && dao_interface.ExtModelMap[dao.Table()] != nil {
-		if result.ExtWhere == nil {
-			result.ExtWhere = make(map[string]func(model *gdb.Model, conf *dao_interface.DaoConfig, data ...interface{}) *gdb.Model, 0)
-		}
-		for k, item := range dao_interface.ExtModelMap[dao.Table()] {
-			result.ExtWhere[k] = item
-		}
-		//_ = gconv.MapToMap(dao_interface.ExtModelMap[dao.Table()], &result.ExtWhere)
-	}
-
-	// 设置上下文中的表名。
-	ctx = context.WithValue(ctx, dao_interface.ContextModelTableKey, result.Table)
-	// 设置上下文中特定表的配置。
-	ctx = context.WithValue(ctx, result.Table, &result)
-
-	// 根据上下文和表名初始化数据库模型。
-	result.Model = dao.DB().Model(dao.Table()).Safe().Ctx(ctx)
-
-	// 获取配置中指定的忽略缓存的表列表。
-	dataCacheConf := g.Cfg().MustGet(ctx, "ormCache.ignore.tables")
-	// 如果忽略缓存的表列表不为*，则对每个表进行缓存配置设置。
-	if dataCacheConf.String() != "*" && enableOrmCache == true {
-		// 从配置中获取忽略缓存的表列表。
-		cacheIgnoreTables := g.Cfg().MustGet(ctx, "ormCache.ignore.tables").Strings()
-
-		// 如果当前表不在忽略缓存列表中，则配置缓存选项。
-		if result.IsIgnoreCache() == false || !garray.NewStrArrayFrom(cacheIgnoreTables).ContainsI(dao.Table()) {
-			if len(cacheOption) == 0 {
-				// 如果没有提供缓存选项，则自动生成一个。
-				result.CacheOption = MakeDaoCache(dao.Table())
-				result.Model = result.Model.Cache(*result.CacheOption)
-			} else if cacheOption[0] != nil {
-				// 如果提供了缓存选项，则使用提供的选项。
-				result.CacheOption = cacheOption[0]
-				result.Model = result.Model.Cache(*result.CacheOption)
-			}
-			// 注册DAO钩子，以便在数据库操作前后执行自定义逻辑。
-			result.Model = RegisterDaoHook(result.Model)
-		}
-	}
-
-	return result
 }

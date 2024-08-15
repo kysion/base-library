@@ -2,7 +2,6 @@ package daoctl
 
 import (
 	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
 // Scan 从数据库中查询数据，并将其反序列化为指定类型的实例。
@@ -17,7 +16,7 @@ import (
 //	*T: 查询结果的指针，如果查询失败则为 nil。
 func Scan[T any](model *gdb.Model) *T {
 	// 执行带有额外条件的查询，这些条件可能在查询执行前需要设置。
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// 创建一个 T 类型的空实例，用于存储查询结果。
 	result := new(T)
@@ -45,7 +44,7 @@ func Scan[T any](model *gdb.Model) *T {
 func ScanWithError[T any](model *gdb.Model) (*T, error) {
 	// ExecExWhere 是一个假设存在的函数，用于执行额外的查询优化或者条件添加操作。
 	// 这里不详细展开其具体实现，因为它不是这段代码关注的焦点。
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// new(T) 用于创建一个T类型的零值实例，用于接下来接收查询结果。
 	result := new(T)
@@ -70,7 +69,7 @@ func ScanWithError[T any](model *gdb.Model) (*T, error) {
 //	返回绑定数据后的结构体指针，如果出现错误则返回 nil。
 func ScanList[T any](model *gdb.Model, bindToAttrName string, relationAttrNameAndFields ...string) *T {
 	// ExecExWhere 方法用于执行额外的查询条件，确保数据的准确性。
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// 初始化结果变量，使用泛型 T 的零值。
 	result := new(T)
@@ -97,7 +96,7 @@ func ScanList[T any](model *gdb.Model, bindToAttrName string, relationAttrNameAn
 //	error: 如果在执行查询或扫描过程中发生错误，将返回该错误。
 func ScanListWithError[T any](model *gdb.Model, bindToAttrName string, relationAttrNameAndFields ...string) (*T, error) {
 	// 对模型执行额外的 where 条件
-	model = dao_interface.ExecExWhere(model)
+	model = ExecExWhere(model)
 
 	// 初始化结果变量，使用泛型 T
 	result := new(T)

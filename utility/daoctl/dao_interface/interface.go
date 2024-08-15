@@ -5,11 +5,6 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 )
 
-// ContextModelTableKey 模型表名称的上下文键名。
-const ContextModelTableKey = "__TABLE__"
-
-var ExtModelMap = map[string]map[string]func(model *gdb.Model, conf *DaoConfig, data ...interface{}) *gdb.Model{}
-
 // DaoConfig 定义了数据访问对象（DAO）的配置结构。
 type DaoConfig struct {
 	Dao         IDao                                                                               // IDao接口实例，用于数据库操作。
