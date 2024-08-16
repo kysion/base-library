@@ -73,3 +73,11 @@ redis:
   # 单实例配置示例1
   default:
     address: 127.0.0.1:6379
+
+# orm缓存配置
+ormCache:
+  # 忽略缓存的表列表，多个表用逗号分隔，支持扩展自定义表
+  ignore:
+    #tables: [ "sys_user", "sys_role", "sys_menu", "sys_dict", "sys_dict_item", "sys_log", "sys_job", "sys_job_log" ] # 代表忽略指定表的缓存
+    tables: "" # 代表不忽略任何表的缓存
+    #tables: "*" # 代表忽略所有表的缓存

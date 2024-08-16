@@ -11,6 +11,81 @@ import (
 	"time"
 )
 
+// Contains 检查给定的切片中是否包含指定的元素。
+//
+// 参数：
+//
+//	slice: 要检查的切片，可以是字符串、整数、浮点数等类型。
+//	element: 要查找的元素，类型与切片中的元素相同。
+//
+// 返回值：
+//
+//	如果切片中包含指定的元素，则返回 true，否则返回 false。
+//
+// 注意：
+//
+//	该函数使用泛型定义，支持多种类型的操作，提高了代码的通用性和复用性。
+func Contains[T comparable](slice []T, element T) bool {
+	// 检查切片是否为空或长度为0，如果是，则直接返回 false，因为切片中不可能包含指定元素。
+	if slice == nil || len(slice) == 0 {
+		return false
+	}
+
+	// 遍历切片中的每个元素，如果找到与指定元素相等的元素，则返回 true。
+	for _, elem := range slice {
+		if elem == element {
+			return true
+		}
+	}
+	// 如果遍历完切片后没有找到指定元素，则返回 false。
+	return false
+}
+
+// Unique 函数用于去除给定切片中的重复元素，返回一个只包含唯一元素的新切片。
+// 它使用了泛型 T，其中 T 需要实现 comparable 接口，以便可以比较两个元素是否相同。
+// 参数 slice: 待处理的切片，其元素类型为泛型 T。
+// 返回值: 一个新切片，包含输入切片中的唯一元素。
+func Unique[T comparable](slice []T) []T {
+	// 使用空结构体来节省空间，用作标记已经见过的元素
+	seen := make(map[T]struct{})
+	// 初始化结果切片，用于存储唯一元素
+	var result []T
+
+	// 遍历输入切片中的每个元素
+	for _, v := range slice {
+		// 检查当前元素是否已经存在于 seen 中
+		if _, exists := seen[v]; !exists {
+			// 如果不存在，则将其添加到 seen 中，并添加到结果切片中
+			seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	// 返回结果切片
+	return result
+}
+
+// FilterEmpty 过滤掉字符串切片中的空字符串。
+// 参数:
+//
+//	slice: 待过滤的字符串切片。
+//
+// 返回值:
+//
+//	一个新的不包含空字符串的字符串切片。
+func FilterEmpty(slice []string) []string {
+	// 初始化一个空的字符串切片，用于存储非空字符串。
+	var result []string
+	// 遍历输入的字符串切片。
+	for _, s := range slice {
+		// 如果当前字符串非空，则将其添加到结果切片中。
+		if s != "" {
+			result = append(result, s)
+		}
+	}
+	// 返回最终的结果切片。
+	return result
+}
+
 func If[R any](condition bool, trueVal, falseVal R) R {
 	if condition {
 		return trueVal
