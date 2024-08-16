@@ -77,16 +77,16 @@ func NewDaoConfig(ctx context.Context, dao dao_interface.IDao, cacheOption ...*g
 
 	// 获取配置中指定的忽略缓存的表列表。
 	dataCacheConf := g.Cfg().MustGet(ctx, "ormCache.ignore.tables")
-	// 如果忽略缓存的表列表不为*，则对每个表进行缓存配置设置。
-	if dataCacheConf.String() != "*" && enableOrmCache == true {
+	// 如果启用了缓存，并且配置中未指定忽略缓存的表，则检查当前表是否被忽略。
+	if enableOrmCache == true && dataCacheConf.String() != "*" && !IsIgnoreOrmCacheByCtx(ctx, dao.Table()) {
 		// 从配置中获取忽略缓存的表列表。
 		cacheIgnoreTables := g.Cfg().MustGet(ctx, "ormCache.ignore.tables").Strings()
 		// 如果存在忽略缓存的表列表，则过滤空字符串和重复的条目。
 		if len(cacheIgnoreTables) > 0 {
-			// 过滤空字符串和重复的条目。
-			cacheIgnoreTables = base_funs.FilterEmpty(cacheIgnoreTables)
 			// 去除重复的条目。
 			cacheIgnoreTables = base_funs.Unique(cacheIgnoreTables)
+			// 过滤空字符串和重复的条目。
+			cacheIgnoreTables = base_funs.FilterEmpty(cacheIgnoreTables)
 		}
 		// 如果当前表不在忽略缓存列表中，则配置缓存选项。
 		if result.IsIgnoreCache() == false || !base_funs.Contains(cacheIgnoreTables, dao.Table()) {
@@ -189,4 +189,85 @@ func IgnoreExtModel(ctx context.Context, tableName string, whereKey ...string) c
 
 	// 将更新后的键列表放回上下文中，并返回更新后的上下文对象
 	return context.WithValue(ctx, ctxWhereKey, existingKeys)
+}
+
+// IsIgnoreExtModel 检查给定的表名和条件键是否在上下文中被标记为需要忽略。
+//
+// 参数:
+//
+//	ctx - 上下文对象，用于传递忽略条件键的相关信息。
+//	tableName - 需要检查的表名。
+//	whereKey - 需要检查的条件键。
+//
+// 返回值:
+//
+//	如果表名和条件键组合被标记为需要忽略，则返回true；否则返回false。
+func IsIgnoreExtModel(ctx context.Context, tableName string, whereKey string) bool {
+	// 定义一个上下文键，用于存储当前表需要忽略的条件键列表
+	ctxWhereKey := "_ctx_ext_where_key_" + tableName
+
+	// 从上下文中获取现有键列表
+	existingKeys, ok := ctx.Value(ctxWhereKey).([]string)
+	if !ok || existingKeys == nil {
+		return false
+	}
+
+	// 检查给定的条件键是否存在于现有键列表中
+	return base_funs.Contains(existingKeys, whereKey)
+}
+
+const contextOrmTableCacheKey = "_ctx_orm_cache_key_"
+
+// IsIgnoreOrmCacheByCtx 检查给定的表名和操作类型是否在上下文中被标记为需要忽略缓存。
+//
+// 参数:
+//
+//	ctx - 上下文对象，用于传递忽略缓存操作的相关信息。
+//	tableName - 需要检查的表名。
+//	action - 表的操作类型。
+//
+// 返回值:
+//
+//	如果表名和操作类型组合被标记为需要忽略缓存，则返回true；否则返回false。
+func IsIgnoreOrmCacheByCtx(ctx context.Context, tableName string) bool {
+	// 从现有context中获取存储表名的sync.Map
+	existingTableNames, ok := ctx.Value(contextOrmTableCacheKey).([]string)
+	if !ok || existingTableNames == nil {
+		return false
+	}
+
+	// 如果找到匹配项，则表示该操作被标记为忽略缓存
+	return base_funs.Contains(existingTableNames, tableName)
+}
+
+// SetTableIgnoreOrmCacheByCtx 根据指定的表名列表，在上下文中记录需要忽略ORM缓存操作的信息。
+// 参数:
+//
+//	ctx: 传入的上下文对象，用于存储和传递忽略ORM缓存操作的信息。
+//	tableNames: 可变参数，指定需要忽略ORM缓存操作的表名列表。
+//
+// 返回值:
+//
+//	返回一个新的上下文对象，其中包含了更新后的忽略ORM缓存操作的信息。
+func SetTableIgnoreOrmCacheByCtx(ctx context.Context, tableNames ...string) context.Context {
+	// 如果没有指定任何表操作，则直接返回原始context
+	if len(tableNames) == 0 {
+		return ctx
+	}
+
+	// 从现有context中加载或初始化存储表名的slice
+	existingTableNames, ok := ctx.Value(contextOrmTableCacheKey).([]string)
+	if !ok || existingTableNames == nil {
+		existingTableNames = make([]string, 0)
+	}
+
+	// 合并传入的表名到现有的表名列表中，并确保列表中没有重复的表名
+	newExistingTableNames := append(existingTableNames, tableNames...)
+	// 去除重复的表名
+	newExistingTableNames = base_funs.Unique(newExistingTableNames)
+	// 移除空字符串，保持列表的清洁
+	newExistingTableNames = base_funs.FilterEmpty(newExistingTableNames)
+
+	// 返回包含忽略缓存数据相关Dao操作信息的新context
+	return context.WithValue(ctx, contextOrmTableCacheKey, newExistingTableNames)
 }
