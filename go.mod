@@ -7,7 +7,6 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/mozillazg/go-pinyin v0.20.0
-	github.com/yitter/idgenerator-go v1.3.3
 	golang.org/x/crypto v0.26.0
 )
 
