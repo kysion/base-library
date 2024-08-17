@@ -7,29 +7,40 @@ import (
 	"strings"
 )
 
+// RegisterServicePhone 函数用于注册一个自定义的验证规则，该规则用于校验“服务电话”是否符合指定格式。
+// 该函数不接受任何参数，也不返回任何值。
 func RegisterServicePhone() {
+	// 初始化一个验证器实例。
+	validator := gvalid.New()
+
+	// 注册一个新的验证规则“service-phone”，并定义该规则的验证逻辑。
 	gvalid.RegisterRule("service-phone", func(ctx context.Context, in gvalid.RuleFuncInput) error {
-		err := gvalid.New().Data(in.Value.String()).Rules("phone").Run(ctx)
-		if err == nil {
+		// 获取待验证的电话号码。
+		phoneNumber := in.Value.String()
+
+		// 使用已有的验证器对电话号码进行“电话”规则的验证，如果通过则返回。
+		if err := validator.Data(phoneNumber).Rules("phone").Run(ctx); err == nil {
 			return nil
 		}
-		err = gvalid.New().Data(in.Value.String()).Rules("\\d{11}").Run(ctx)
-		if (strings.HasPrefix(in.Value.String(), "400") || strings.HasPrefix(in.Value.String(), "800")) && err == nil {
+		// 检查电话号码是否以“400”或“800”开头且长度为11，满足条件则返回。
+		if (strings.HasPrefix(phoneNumber, "400") || strings.HasPrefix(phoneNumber, "800")) && len(phoneNumber) == 11 {
 			return nil
 		}
-		err = gvalid.New().Data(in.Value.String()).Rules("[0-9]{5}").Run(ctx)
-		if strings.HasPrefix(in.Value.String(), "95") && err == nil {
+		// 检查电话号码是否以“95”开头且长度为5，满足条件则返回。
+		if strings.HasPrefix(phoneNumber, "95") && len(phoneNumber) == 5 {
 			return nil
 		}
-		err = gvalid.New().Data(in.Value.String()).Rules("telephone").Run(ctx)
-		if err == nil {
+		// 使用已有的验证器对电话号码进行“电话”规则的验证，如果通过则返回。
+		if err := validator.Data(phoneNumber).Rules("telephone").Run(ctx); err == nil {
 			return nil
 		}
 
+		// 如果有自定义的错误信息，则使用该信息生成一个错误。
 		if in.Message != "" {
 			return gerror.New(in.Message)
 		}
 
-		return gerror.New("The ServicePhone value `" + in.Value.String() + "` is not a valid ServicePhone number")
+		// 如果以上验证均未通过，返回一个错误，说明电话号码不是有效的服务电话号码。
+		return gerror.New("The ServicePhone value `" + phoneNumber + "` is not a valid ServicePhone number")
 	})
 }
