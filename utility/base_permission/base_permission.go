@@ -61,10 +61,10 @@ func EnsureFactoryInitialized() error {
 // 参数 name 权限的名称
 // 参数 description 权限的描述，可选
 // 返回创建的权限实例和可能的错误
-func New(id int64, identifier string, name string, description ...string) (IPermission, error) {
+func New(id int64, identifier string, name string, description ...string) IPermission {
 	err := EnsureFactoryInitialized()
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	desc := ""
@@ -74,10 +74,10 @@ func New(id int64, identifier string, name string, description ...string) (IPerm
 
 	perm := factory()
 	if _, ok := perm.(IPermission); !ok {
-		return nil, fmt.Errorf("factory did not return an IPermission instance")
+		return nil
 	}
 
-	return perm.SetId(id).SetIdentifier(identifier).SetName(name).SetDescription(desc), nil
+	return perm.SetId(id).SetIdentifier(identifier).SetName(name).SetDescription(desc)
 }
 
 // NewInIdentifier 构造权限信息
@@ -85,10 +85,10 @@ func New(id int64, identifier string, name string, description ...string) (IPerm
 // 参数 name 权限的名称
 // 参数 description 权限的描述，可选
 // 返回创建的权限实例和可能的错误
-func NewInIdentifier(identifier string, name string, description ...string) (IPermission, error) {
+func NewInIdentifier(identifier string, name string, description ...string) IPermission {
 	err := EnsureFactoryInitialized()
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	desc := ""
@@ -98,8 +98,8 @@ func NewInIdentifier(identifier string, name string, description ...string) (IPe
 
 	perm := factory()
 	if _, ok := perm.(IPermission); !ok {
-		return nil, fmt.Errorf("factory did not return an IPermission instance")
+		return nil
 	}
 
-	return perm.SetIdentifier(identifier).SetName(name).SetDescription(desc), nil
+	return perm.SetIdentifier(identifier).SetName(name).SetDescription(desc)
 }
