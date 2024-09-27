@@ -177,5 +177,5 @@ func MakeModel(model *gdb.Model, searchFields *base_model.SearchParams) *gdb.Mod
 	// 根据排序条件应用排序。
 	queryDb = internal.MakeOrderBy(queryDb, searchFields.OrderBy)
 
-	return model
+	return queryDb
 }
