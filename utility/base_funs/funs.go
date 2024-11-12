@@ -120,6 +120,13 @@ func SearchFilterEx(search *base_model.SearchParams, fields ...string) *base_mod
 		//}
 
 		if ss {
+			for _, filterInfo := range newSearchFilter {
+				if !newSearchFilterStr.Contains(filterInfo.Field) || (newSearchFilterStr.Contains(filterInfo.Field) && info.Value != filterInfo.Value) {
+					newSearchFilterStr.Append(info.Field)
+					newSearchFilter = append(newSearchFilter, info)
+					break
+				}
+			}
 			if !newSearchFilterStr.Contains(info.Field) {
 				newSearchFilterStr.Append(info.Field)
 				newSearchFilter = append(newSearchFilter, info)
