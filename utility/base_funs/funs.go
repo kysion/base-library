@@ -171,18 +171,13 @@ func ByteCountIEC[T int64 | uint64](b T) string {
 }
 
 func RemoveSliceAt[T int | int64 | string | uint | uint64](slice []T, elem T) []T {
-	if len(slice) == 0 {
-		return slice
-	}
-
-	for i, v := range slice {
-		if v == elem {
-			slice = append(slice[:i], slice[i+1:]...)
-			return RemoveSliceAt(slice, elem)
-			break
+	result := make([]T, 0, len(slice))
+	for _, v := range slice {
+		if v != elem {
+			result = append(result, v)
 		}
 	}
-	return slice
+	return result
 }
 
 func AttrBuilder[T any, TP any](ctx context.Context, key string, builder ...func(data TP)) context.Context {

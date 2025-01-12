@@ -24,7 +24,7 @@ func loadConfigNode() gdb.ConfigNode {
 		Type:                 os.Getenv("DB_TYPE"),
 		Link:                 os.Getenv("DB_LINK"),
 		Extra:                os.Getenv("DB_EXTRA"),
-		Role:                 os.Getenv("DB_ROLE"),
+		Role:                 gdb.Role(os.Getenv("DB_ROLE")),
 		Debug:                gconv.Bool(os.Getenv("DB_DEBUG")),
 		Prefix:               os.Getenv("DB_PREFIX"),
 		DryRun:               gconv.Bool(os.Getenv("DB_DRYRUN")),
