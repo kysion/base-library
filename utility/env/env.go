@@ -137,14 +137,23 @@ func LoadDbEnv() {
 	if strings.Contains(dbConfig.Link, ":") || (dbConfig.Name != "" && dbConfig.User != "") {
 		if strings.HasPrefix(dbConfig.Link, "postgres") {
 			dbConfig.Type = "pgsql"
-		} else {
+			dbConfig.Link = strings.Replace(dbConfig.Link, "postgres", "pgsql", 1)
+		} else if dbConfig.Link != "" {
 			dbConfig.Type = strings.Split(dbConfig.Link, ":")[0]
 		}
 
-		gdb.SetConfig(gdb.Config{
+		if dbConfig.Type == "" {
+			panic("数据库类型不能为空")
+		}
+
+		err = gdb.SetConfig(gdb.Config{
 			gdb.DefaultGroupName: gdb.ConfigGroup{
 				dbConfig,
 			},
 		})
+
+		if err != nil {
+			println("加载数据库配置失败", err)
+		}
 	}
 }
