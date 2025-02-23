@@ -120,6 +120,13 @@ func SearchFilterEx(search *base_model.SearchParams, fields ...string) *base_mod
 		//}
 
 		if ss {
+			for _, filterInfo := range newSearchFilter {
+				if !newSearchFilterStr.Contains(filterInfo.Field) || (newSearchFilterStr.Contains(filterInfo.Field) && info.Value != filterInfo.Value) {
+					newSearchFilterStr.Append(info.Field)
+					newSearchFilter = append(newSearchFilter, info)
+					break
+				}
+			}
 			if !newSearchFilterStr.Contains(info.Field) {
 				newSearchFilterStr.Append(info.Field)
 				newSearchFilter = append(newSearchFilter, info)
@@ -164,18 +171,13 @@ func ByteCountIEC[T int64 | uint64](b T) string {
 }
 
 func RemoveSliceAt[T int | int64 | string | uint | uint64](slice []T, elem T) []T {
-	if len(slice) == 0 {
-		return slice
-	}
-
-	for i, v := range slice {
-		if v == elem {
-			slice = append(slice[:i], slice[i+1:]...)
-			return RemoveSliceAt(slice, elem)
-			break
+	result := make([]T, 0, len(slice))
+	for _, v := range slice {
+		if v != elem {
+			result = append(result, v)
 		}
 	}
-	return slice
+	return result
 }
 
 func AttrBuilder[T any, TP any](ctx context.Context, key string, builder ...func(data TP)) context.Context {
@@ -195,17 +197,83 @@ func AttrBuilder[T any, TP any](ctx context.Context, key string, builder ...func
 	)
 }
 
-// union_main_id::co_model.EmployeeRes::[]co_model.Team
+// AttrMake 动态地创建属性值。
+//
+// 该函数通过反射机制，根据传入的类型信息 T 和 TP，以及一个构建器函数 builder，
+// 来生成一个特定类型的属性值。这个属性值被存储在上下文 ctx 中，使用一个与类型相关的键值。
+//
+// 参数:
+// - ctx: 上下文，用于存储属性值。
+// - key: 属性的键值，用于在上下文中检索。
+// - builder: 一个函数，用于创建 TP 类型的实例。
+//
+// 注意: 该函数假定 ctx 中存储的属性值类型与预期匹配。
 func AttrMake[T any, TP any](ctx context.Context, key string, builder func() TP) {
+	// 构建一个完整的键值，包括泛型类型的名称，以确保键值的唯一性。
 	key = key + "::" + reflect.ValueOf(new(T)).Type().String() + "::" + reflect.ValueOf(new(TP)).Type().String()
+	// 移除键值中的 "*" 字符，这是为了键值的清晰和一致性。
 	key = gstr.Replace(key, "*", "")
+	// 从上下文中获取与键值相关联的属性值。
 	v := ctx.Value(key)
 
-	data, has := v.(base_model.KeyValueT[string, func(data TP)])
-	if v != nil && has {
+	// 初始化一个泛型数据结构，用于存储属性键值和构建的实例。
+	var data base_model.KeyValueT[string, func(data TP)]
+	// 尝试将获取的值断言为目标类型。
+	if v, ok := v.(base_model.KeyValueT[string, func(data TP)]); ok {
+		// 如果类型断言成功，初始化 data 并使用 builder 函数创建一个实例。
+		data = v
 		data.Value(builder())
+	} else {
+		// 如果类型断言失败，输出错误信息。
+		fmt.Println("Type assertion failed")
 	}
 }
+
+// Throttle 函数用于限制一个操作的执行频率，确保操作不会被过于频繁地执行。
+// 它接受一个函数 f 和一个间隔 interval，返回一个新函数，该新函数会确保 f 最多以 interval 为间隔执行。
+// 参数:
+//
+//	f: 要节流的函数，即需要限制执行频率的操作。
+//	interval: 两次连续执行 f 之间的最短时间间隔。
+//
+// 返回值:
+//
+//	返回一个函数，该函数在调用时会根据节流逻辑决定是否执行 f。
+func Throttle(f func(), interval time.Duration) func() {
+	var lastTime time.Time // 记录上一次执行 f 的时间
+	var mutex sync.Mutex   // 用于确保时间检查的线程安全
+
+	return func() {
+		now := time.Now()    // 获取当前时间
+		mutex.Lock()         // 上锁以确保线程安全
+		defer mutex.Unlock() // 在函数退出时解锁
+
+		// 更新 lastTime 在调用 f 之前
+		lastTime = now
+		// 如果是第一次调用或距离上次调用已超过interval，则执行f
+		if lastTime.IsZero() || now.Sub(lastTime) >= interval {
+			f() // 执行传入的函数 f
+			// 确保实际调用间隔至少为 interval
+			time.Sleep(interval - time.Since(lastTime))
+		}
+	}
+}
+
+// Throttle 示例函数，用于打印消息
+//func printMessage() {
+//	fmt.Println("Hello, throttled execution!")
+//}
+//
+//func main() {
+//	// 创建一个节流后的函数，每两秒最多执行一次
+//	throttledPrint := Throttle(printMessage, 2*time.Second)
+//
+//	// 每秒尝试调用一次 throttledPrint
+//	for i := 0; i < 10; i++ {
+//		throttledPrint()
+//		time.Sleep(1 * time.Second)
+//	}
+//}
 
 /*
  Debounce 防抖函数
@@ -218,13 +286,20 @@ func AttrMake[T any, TP any](ctx context.Context, key string, builder func() TP)
 	就好比你在不停地按一个按钮，但系统只在你最后一次按完并经过一段安静时间（防抖时间间隔）后，才真正去执行相应的操作。
 	在这期间，不管你按得多频繁，只有最后一次按下去且等待一段时间没再按，才会触发实际动作。
 */
-// Debounce 防抖函数
-func Debounce(interval time.Duration) func(f func()) { // interval: 防抖时间间隔
 
+// Debounce 创建一个防抖函数和一个停止函数。
+// 防抖函数用于在多次触发时只执行一次给定的函数，且只在停止触发后至少间隔指定时间再执行。
+// 停止函数用于停止防抖函数的执行。
+// 参数 interval 为防抖时间间隔，即在停止触发后多久执行给定函数。
+func Debounce(interval time.Duration) (func(f func()), func()) {
+
+	// 使用互斥锁来保证并发安全，特别是在停止和重新设定计时器时。
 	var l sync.Mutex
+	// timer 用于实现防抖逻辑，通过停止和重新设定来控制防抖行为。
 	var timer *time.Timer
 
-	return func(f func()) {
+	// run 函数用于执行传入的函数f，并在f多次触发时，保证f只执行一次。
+	run := func(f func()) {
 		l.Lock()
 		defer l.Unlock()
 		// 使用lock保证d.timer更新之前一定先Stop.
@@ -234,6 +309,19 @@ func Debounce(interval time.Duration) func(f func()) { // interval: 防抖时间
 		}
 		timer = time.AfterFunc(interval, f)
 	}
+
+	// stop 函数用于停止当前的防抖函数执行。
+	stop := func() {
+		l.Lock()
+		defer l.Unlock()
+		if timer != nil {
+			timer.Stop()
+			timer = nil
+		}
+	}
+
+	// 返回run函数和stop函数，分别用于执行防抖逻辑和停止防抖逻辑。
+	return run, stop
 }
 
 //// Debounce 防抖函数 （优化版）

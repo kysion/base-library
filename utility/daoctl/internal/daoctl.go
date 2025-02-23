@@ -30,7 +30,8 @@ func MakeCountArr(db *gdb.Model, searchFields []base_model.FilterInfo) (total in
 	// 初始化计数变量
 	count := 0
 	// 执行查询并统计满足条件的记录数，不需实际加载数据
-	err = db.ScanAndCount(nil, &count, false)
+	_ = db.ScanAndCount(nil, &count, false)
+	//count, err = db.Count()
 	if err != nil {
 		// 如果查询执行出错，直接返回0
 		return 0

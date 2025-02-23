@@ -161,3 +161,21 @@ func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExp
 
 	return response, nil
 }
+
+// MakeModel 函数用于创建一个查询模型，并返回一个指向该模型的指针。
+func MakeModel(model *gdb.Model, searchFields *base_model.SearchParams) *gdb.Model {
+	// 对模型执行预处理，可能包括设置默认的查询条件等。
+	model = ExecExWhere(model)
+
+	// 如果没有提供搜索参数，则初始化一个默认的搜索参数对象。
+	if searchFields == nil {
+		searchFields = &base_model.SearchParams{}
+	}
+
+	// 根据过滤条件构建查询语句。
+	queryDb, _ := internal.MakeBuilder(model, searchFields.Filter)
+	// 根据排序条件应用排序。
+	queryDb = internal.MakeOrderBy(queryDb, searchFields.OrderBy)
+
+	return queryDb
+}
