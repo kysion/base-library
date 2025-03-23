@@ -1,0 +1,17 @@
+{
+  "types": [
+    {"type": "feat", "section": "✨ 新功能"},
+    {"type": "fix", "section": "🐛 Bug修复"},
+    {"type": "perf", "section": "⚡ 性能优化"},
+    {"type": "refactor", "section": "♻️ 代码重构"},
+    {"type": "style", "section": "💎 代码样式"},
+    {"type": "docs", "section": "📚 文档更新"},
+    {"type": "test", "section": "✅ 测试相关"},
+    {"type": "build", "section": "📦 构建系统"},
+    {"type": "ci", "section": "🔄 CI配置"},
+    {"type": "chore", "section": "🔧 其他修改"}
+  ],
+  "commitUrlFormat": "https://github.com/kysion/base-library/commit/{{hash}}",
+  "compareUrlFormat": "https://github.com/kysion/base-library/compare/{{previousTag}}...{{currentTag}}",
+  "issueUrlFormat": "https://github.com/kysion/base-library/issues/{{id}}"
+} 
