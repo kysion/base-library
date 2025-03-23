@@ -3,12 +3,12 @@ name: Release Go Module
 on:
     push:
         branches:
-            - main # 主分支名称，如果是master或其他名称请相应修改
+            - main
     pull_request:
         types:
             - closed
         branches:
-            - main # 主分支名称，如果是master或其他名称请相应修改
+            - main
     workflow_dispatch:
         inputs:
             version_type:
@@ -22,16 +22,15 @@ on:
                     - major
 
 jobs:
-    release:
-        name: Create Release
+    verify:
+        name: Verify Code
         runs-on: ubuntu-latest
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
-
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
               with:
-                  fetch-depth: 0 # 获取所有历史记录和标签
+                  fetch-depth: 0
 
             - name: Set up Go
               uses: actions/setup-go@v5
@@ -45,13 +44,37 @@ jobs:
             - name: Run tests
               run: go test -v ./...
 
-            - name: Get latest tag
+    release:
+        name: Create Release
+        needs: verify
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '>=1.24.0'
+                  cache: true
+
+            - name: Go mod tidy
+              run: go mod tidy
+
+            # 手动版本更新处理（用于workflow_dispatch触发时）
+            - name: Get latest tag for manual release
+              if: github.event_name == 'workflow_dispatch'
               id: latest_tag
               run: |
                   echo "LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.0')" >> $GITHUB_ENV
                   echo "Current latest tag: ${{ env.LATEST_TAG }}"
 
-            - name: Determine new version
+            - name: Determine new version for manual release
+              if: github.event_name == 'workflow_dispatch'
               id: new_version
               run: |
                   LATEST_VERSION=${LATEST_TAG#v}
@@ -61,7 +84,7 @@ jobs:
                   PATCH=${VERSION_PARTS[2]:-0}
 
                   # 根据输入或默认更新相应的版本号
-                  VERSION_TYPE="${{ github.event.inputs.version_type || 'patch' }}"
+                  VERSION_TYPE="${{ github.event.inputs.version_type }}"
 
                   if [ "$VERSION_TYPE" = "major" ]; then
                     MAJOR=$((MAJOR+1))
@@ -78,32 +101,30 @@ jobs:
                   echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
                   echo "New version will be: $NEW_VERSION (type: $VERSION_TYPE)"
 
-            - name: Update go.mod and tidy
+            # 使用conventional-changelog生成分类的变更日志（用于workflow_dispatch触发时）
+            - name: Setup Node.js for manual release
+              if: github.event_name == 'workflow_dispatch'
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '20'
+
+            - name: Install conventional-changelog-cli for manual release
+              if: github.event_name == 'workflow_dispatch'
+              run: npm install -g conventional-changelog-cli
+
+            - name: Generate classified changelog for manual release
+              if: github.event_name == 'workflow_dispatch'
               run: |
-                  go mod tidy
+                  conventional-changelog -p angular -i CHANGELOG.md -s -r 0
+                  echo "# 版本 ${{ env.NEW_VERSION }}" > RELEASE_NOTES.md
+                  echo "" >> RELEASE_NOTES.md
+                  echo "发布日期: $(date +"%Y-%m-%d")" >> RELEASE_NOTES.md
+                  echo "" >> RELEASE_NOTES.md
+                  conventional-changelog -p angular -r 2 >> RELEASE_NOTES.md
 
-            - name: Generate release notes
-              id: release_notes
-              run: |
-                  PREV_TAG=$(git describe --tags --abbrev=0 ${{ env.LATEST_TAG }}^ 2>/dev/null || echo '')
-                  if [ -z "$PREV_TAG" ]; then
-                    # 如果没有找到前一个标签，则获取所有提交
-                    git log --pretty=format:"* %s (%h)" > RELEASE_NOTES.md
-                  else
-                    # 否则获取两个标签之间的提交
-                    git log --pretty=format:"* %s (%h)" ${{ env.LATEST_TAG }}...HEAD > RELEASE_NOTES.md
-                  fi
-
-                  # 添加标题
-                  echo "# 版本 ${{ env.NEW_VERSION }}" | cat - RELEASE_NOTES.md > temp && mv temp RELEASE_NOTES.md
-
-                  # 添加日期
-                  DATE=$(date +"%Y-%m-%d")
-                  echo "发布日期: $DATE" >> RELEASE_NOTES.md
-
-                  echo "Generated release notes"
-
-            - name: Create release
+            # 创建手动发布
+            - name: Create manual release
+              if: github.event_name == 'workflow_dispatch'
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ env.NEW_VERSION }}
@@ -114,10 +135,36 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+            # 自动语义化发布（用于push或PR合并触发时）
+            - name: Setup Node.js for semantic release
+              if: github.event_name != 'workflow_dispatch'
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '20'
+
+            - name: Install semantic-release dependencies
+              if: github.event_name != 'workflow_dispatch'
+              run: |
+                  npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
+
+            - name: Semantic Release
+              if: github.event_name != 'workflow_dispatch'
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: npx semantic-release
+
+            # 提交go.mod和go.sum的更改
             - name: Commit and push changes
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   git config --local user.email "action@github.com"
                   git config --local user.name "GitHub Action"
-                  git add go.mod go.sum
-                  git diff-index --quiet HEAD || git commit -m "chore: 更新依赖 for 版本 ${{ env.NEW_VERSION }}"
-                  git push
+                  if git diff --quiet --exit-code go.mod go.sum; then
+                    echo "No changes to commit"
+                  else
+                    git add go.mod go.sum
+                    VERSION="${{ env.NEW_VERSION || 'latest' }}"
+                    git commit -m "chore(deps): 更新依赖版本 for $VERSION"
+                    git push
+                  fi
