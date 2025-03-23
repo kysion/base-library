@@ -2,7 +2,7 @@
 
 # 执行所有基准测试并输出结果
 cd "$(dirname "$0")"
-go test -bench=. -benchmem -count=3 -benchtime=1s > benchmark_results.txt
+go test -bench=. -benchmem > benchmark_results.txt
 
 # 分析结果并输出摘要
 echo -e "\n性能测试结果摘要:" | tee benchmark_results.txt
