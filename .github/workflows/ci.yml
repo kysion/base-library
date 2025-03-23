@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: 持续集成
 
 on:
     push:
@@ -7,25 +7,69 @@ on:
         branches: [main, dev]
 
 jobs:
-    test:
-        name: Unit Tests
+    lint:
+        name: 代码检查
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout code
+            - name: 检出代码
               uses: actions/checkout@v4
 
-            - name: Set up Go
+            - name: 设置Go环境
               uses: actions/setup-go@v5
               with:
                   go-version: '>=1.24.0'
                   cache: true
 
-            - name: Run tests
+            - name: 安装golangci-lint
+              run: |
+                  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
+                  golangci-lint --version
+
+            - name: 运行golangci-lint
+              run: golangci-lint run --timeout=5m
+
+    test:
+        name: 单元测试
+        runs-on: ubuntu-latest
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+
+            - name: 设置Go环境
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '>=1.24.0'
+                  cache: true
+
+            - name: 运行测试
               run: go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
-            - name: Upload coverage report
+            - name: 上传覆盖率报告
               uses: codecov/codecov-action@v4
               with:
                   file: ./coverage.txt
                   fail_ci_if_error: false
                   token: ${{ secrets.CODECOV_TOKEN }}
+
+    security:
+        name: 安全扫描
+        runs-on: ubuntu-latest
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+
+            - name: 设置Go环境
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '>=1.24.0'
+                  cache: true
+
+            - name: 运行Gosec安全扫描
+              uses: securego/gosec@v2
+              with:
+                  args: '-no-fail -fmt sarif -out results.sarif ./...'
+
+            - name: 上传SARIF文件
+              uses: github/codeql-action/upload-sarif@v2
+              with:
+                  sarif_file: results.sarif
