@@ -1,7 +1,6 @@
 package enum
 
 import (
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -91,8 +90,59 @@ func (e *enumType[TCode, TData]) Has(enumInfo ...IEnumCode[TCode]) bool {
 			if e.code != item.Code() {
 				return false
 			}
-		} else { // 假设为数值类型
-			if gconv.Int64(e.code)&gconv.Int64(item.Code()) != gconv.Int64(item.Code()) {
+		} else { // 数值类型
+			switch code := any(e.code).(type) {
+			case int:
+				itemCode := any(item.Code()).(int)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case int8:
+				itemCode := any(item.Code()).(int8)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case int16:
+				itemCode := any(item.Code()).(int16)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case int32:
+				itemCode := any(item.Code()).(int32)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case int64:
+				itemCode := any(item.Code()).(int64)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case uint:
+				itemCode := any(item.Code()).(uint)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case uint8:
+				itemCode := any(item.Code()).(uint8)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case uint16:
+				itemCode := any(item.Code()).(uint16)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case uint32:
+				itemCode := any(item.Code()).(uint32)
+				if code&itemCode != itemCode {
+					return false
+				}
+			case uint64:
+				itemCode := any(item.Code()).(uint64)
+				if code&itemCode != itemCode {
+					return false
+				}
+			default:
 				return false
 			}
 		}
@@ -107,24 +157,87 @@ func (e *enumType[TCode, TData]) Add(enumInfo ...IEnumCode[TCode]) bool {
 		return false
 	}
 
-	if _, ok := any(e.code).(string); ok { // 检查是否为字符串类型
+	// 字符串类型不支持位运算
+	if _, ok := any(e.code).(string); ok {
 		return false
 	}
 
-	newCode := gconv.Int64(e.code)
+	var changed bool
+	var oldCode = e.code
 
+	// 从Go 1.18开始支持泛型，但泛型类型断言还不完善
+	// 这里使用更简单的方式实现
 	for _, item := range enumInfo {
-		localCode := gconv.Int64(item.Code())
-		newCode |= localCode
+		switch code := any(e.code).(type) {
+		case int:
+			itemCode := any(item.Code()).(int)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case int8:
+			itemCode := any(item.Code()).(int8)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case int16:
+			itemCode := any(item.Code()).(int16)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case int32:
+			itemCode := any(item.Code()).(int32)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case int64:
+			itemCode := any(item.Code()).(int64)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case uint:
+			itemCode := any(item.Code()).(uint)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case uint8:
+			itemCode := any(item.Code()).(uint8)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case uint16:
+			itemCode := any(item.Code()).(uint16)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case uint32:
+			itemCode := any(item.Code()).(uint32)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		case uint64:
+			itemCode := any(item.Code()).(uint64)
+			if code|itemCode != code {
+				e.code = TCode(code | itemCode)
+				changed = true
+			}
+		}
 	}
 
-	if e.code == TCode(newCode) {
-		return false
+	// 对于性能测试，如果出错则恢复原值
+	if !changed {
+		e.code = oldCode
 	}
 
-	e.code = TCode(newCode)
-
-	return true
+	return changed
 }
 
 // Remove 移除指定的枚举类型。
@@ -133,23 +246,87 @@ func (e *enumType[TCode, TData]) Remove(enumInfo ...IEnumCode[TCode]) bool {
 		return false
 	}
 
-	if _, ok := any(e.code).(string); ok { // 检查是否为字符串类型
+	// 字符串类型不支持位运算
+	if _, ok := any(e.code).(string); ok {
 		return false
 	}
 
-	newCode := gconv.Int64(e.code)
+	var changed bool
+	var oldCode = e.code
 
+	// 从Go 1.18开始支持泛型，但泛型类型断言还不完善
+	// 这里使用更简单的方式实现
 	for _, item := range enumInfo {
-		localCode := gconv.Int64(item.Code())
-		newCode &= ^localCode
+		switch code := any(e.code).(type) {
+		case int:
+			itemCode := any(item.Code()).(int)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case int8:
+			itemCode := any(item.Code()).(int8)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case int16:
+			itemCode := any(item.Code()).(int16)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case int32:
+			itemCode := any(item.Code()).(int32)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case int64:
+			itemCode := any(item.Code()).(int64)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case uint:
+			itemCode := any(item.Code()).(uint)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case uint8:
+			itemCode := any(item.Code()).(uint8)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case uint16:
+			itemCode := any(item.Code()).(uint16)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case uint32:
+			itemCode := any(item.Code()).(uint32)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		case uint64:
+			itemCode := any(item.Code()).(uint64)
+			if code&itemCode != 0 {
+				e.code = TCode(code &^ itemCode)
+				changed = true
+			}
+		}
 	}
 
-	if e.code == TCode(newCode) {
-		return false
+	// 对于性能测试，如果出错则恢复原值
+	if !changed {
+		e.code = oldCode
 	}
 
-	e.code = TCode(newCode)
-	return true
+	return changed
 }
 
 // New 创建一个新的枚举类型实例。
@@ -179,13 +356,11 @@ func GetTypes[V uint | uint8 | uint16 | uint32 | uintptr | uint64 | int | int8 |
 
 	result := make([]IEnumCode[V], 0)
 
-	for key, value := range typeMaps {
+	for key, _ := range typeMaps {
 		var item = typeMaps[key].(IEnumCode[V])
 		if code&item.Code() == item.Code() {
 			result = append(result, item)
 		}
-
-		g.Dump(key, value, item.Code())
 	}
 
 	return result
