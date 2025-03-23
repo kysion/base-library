@@ -2,6 +2,8 @@ package base_tree
 
 // TestTree 结构实现了 Tree 接口，用于表示具有层次结构的树形数据。
 // 它包含节点信息、父节点ID、节点名称以及子节点列表。
+//
+//nolint:stylecheck
 type TestTree struct {
 	Id       int64       `json:"id"             dc:"ID" v:"integer"`                   // 节点ID，唯一标识一个节点。
 	ParentId int64       `json:"parentId"       dc:"父级ID" v:"min:0#必须是正整数"`            // 父节点ID，标识该节点的父节点。

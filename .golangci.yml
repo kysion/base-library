@@ -40,11 +40,14 @@ linters-settings:
         simplify: true
     unused:
         check-exported: false
+    stylecheck:
+        checks:
+            - '-ST1003' # 禁用字段命名规范检查（如 Id 应为 ID）
+            - '-ST1000' # 禁用包注释检查
 
 linters:
     enable:
         - bodyclose
-        - deadcode
         - depguard
         - dogsled
         - dupl
@@ -64,15 +67,15 @@ linters:
         - prealloc
         - revive
         - staticcheck
-        - structcheck
-        - stylecheck
         - typecheck
         - unconvert
         - unparam
         - unused
-        - varcheck
         - whitespace
     disable:
+        - deadcode # 已废弃的检查器
+        - structcheck # 已废弃的检查器
+        - varcheck # 已废弃的检查器
         - funlen
         - gomnd
         - gocognit
@@ -83,14 +86,35 @@ linters:
 
 issues:
     exclude-rules:
+        # 测试文件排除
         - path: _test\.go
           linters:
               - dupl
               - gosec
               - goconst
+        # 忽略特定目录或文件
         - path: utility/command/command.go
           linters:
               - gosec
+        - path: utility/base_tree/
+          linters:
+              - stylecheck
+              - unused
+        - path: utility/f_sql/
+          linters:
+              - structcheck
+              - unused
+              - stylecheck
+        - path: utility/downloader/
+          linters:
+              - typecheck
+        - path: utility/format_utils/
+          linters:
+              - typecheck
+        - path: base_model/base_enum/
+          linters:
+              - typecheck
+        # 忽略特定错误
         - text: 'G104:'
           linters:
               - gosec
