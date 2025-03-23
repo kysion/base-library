@@ -9,26 +9,41 @@ on:
             - closed
         branches:
             - main # 主分支名称，如果是master或其他名称请相应修改
+    workflow_dispatch:
+        inputs:
+            version_type:
+                description: '版本更新类型 (patch, minor, major)'
+                required: true
+                default: 'patch'
+                type: choice
+                options:
+                    - patch
+                    - minor
+                    - major
 
 jobs:
     release:
         name: Create Release
         runs-on: ubuntu-latest
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0 # 获取所有历史记录和标签
 
             - name: Set up Go
-              uses: actions/setup-go@v4
+              uses: actions/setup-go@v5
               with:
                   go-version: '>=1.24.0'
+                  cache: true
+
+            - name: Verify dependencies
+              run: go mod verify
 
             - name: Run tests
-              run: go test ./...
+              run: go test -v ./...
 
             - name: Get latest tag
               id: latest_tag
@@ -45,32 +60,64 @@ jobs:
                   MINOR=${VERSION_PARTS[1]:-0}
                   PATCH=${VERSION_PARTS[2]:-0}
 
-                  # 增加补丁版本号
-                  PATCH=$((PATCH+1))
+                  # 根据输入或默认更新相应的版本号
+                  VERSION_TYPE="${{ github.event.inputs.version_type || 'patch' }}"
+
+                  if [ "$VERSION_TYPE" = "major" ]; then
+                    MAJOR=$((MAJOR+1))
+                    MINOR=0
+                    PATCH=0
+                  elif [ "$VERSION_TYPE" = "minor" ]; then
+                    MINOR=$((MINOR+1))
+                    PATCH=0
+                  else
+                    PATCH=$((PATCH+1))
+                  fi
+
                   NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
-
                   echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-                  echo "New version will be: $NEW_VERSION"
+                  echo "New version will be: $NEW_VERSION (type: $VERSION_TYPE)"
 
-            - name: Create Release
-              id: create_release
-              uses: softprops/action-gh-release@v1
+            - name: Update go.mod and tidy
+              run: |
+                  go mod tidy
+
+            - name: Generate release notes
+              id: release_notes
+              run: |
+                  PREV_TAG=$(git describe --tags --abbrev=0 ${{ env.LATEST_TAG }}^ 2>/dev/null || echo '')
+                  if [ -z "$PREV_TAG" ]; then
+                    # 如果没有找到前一个标签，则获取所有提交
+                    git log --pretty=format:"* %s (%h)" > RELEASE_NOTES.md
+                  else
+                    # 否则获取两个标签之间的提交
+                    git log --pretty=format:"* %s (%h)" ${{ env.LATEST_TAG }}...HEAD > RELEASE_NOTES.md
+                  fi
+
+                  # 添加标题
+                  echo "# 版本 ${{ env.NEW_VERSION }}" | cat - RELEASE_NOTES.md > temp && mv temp RELEASE_NOTES.md
+
+                  # 添加日期
+                  DATE=$(date +"%Y-%m-%d")
+                  echo "发布日期: $DATE" >> RELEASE_NOTES.md
+
+                  echo "Generated release notes"
+
+            - name: Create release
+              uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ env.NEW_VERSION }}
                   name: Release ${{ env.NEW_VERSION }}
-                  generate_release_notes: true
+                  body_path: RELEASE_NOTES.md
                   draft: false
+                  prerelease: false
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Update go.mod
-              run: |
-                  go mod tidy
 
             - name: Commit and push changes
               run: |
                   git config --local user.email "action@github.com"
                   git config --local user.name "GitHub Action"
                   git add go.mod go.sum
-                  git commit -m "chore: update dependencies for release ${{ env.NEW_VERSION }}" || echo "No changes to commit"
+                  git diff-index --quiet HEAD || git commit -m "chore: 更新依赖 for 版本 ${{ env.NEW_VERSION }}"
                   git push

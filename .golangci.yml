@@ -1,0 +1,107 @@
+run:
+    timeout: 5m
+    modules-download-mode: readonly
+    tests: true
+    skip-dirs:
+        - hack
+        - manifest
+    skip-files:
+        - ".*_test\\.go$"
+
+linters-settings:
+    errcheck:
+        check-type-assertions: true
+        check-blank: true
+    govet:
+        check-shadowing: true
+    gocyclo:
+        min-complexity: 15
+    dupl:
+        threshold: 100
+    goconst:
+        min-len: 3
+        min-occurrences: 3
+    revive:
+        confidence: 0.8
+    goimports:
+        local-prefixes: github.com/kysion/base-library
+    gocritic:
+        enabled-tags:
+            - diagnostic
+            - style
+            - performance
+            - experimental
+            - opinionated
+    gosec:
+        exclude-generated: true
+        excludes:
+            - G104 # Audit errors not checked
+    gofmt:
+        simplify: true
+    unused:
+        check-exported: false
+
+linters:
+    enable:
+        - bodyclose
+        - deadcode
+        - depguard
+        - dogsled
+        - dupl
+        - errcheck
+        - gochecknoinits
+        - goconst
+        - gocritic
+        - gocyclo
+        - gofmt
+        - goimports
+        - gosec
+        - gosimple
+        - govet
+        - ineffassign
+        - misspell
+        - nakedret
+        - prealloc
+        - revive
+        - staticcheck
+        - structcheck
+        - stylecheck
+        - typecheck
+        - unconvert
+        - unparam
+        - unused
+        - varcheck
+        - whitespace
+    disable:
+        - funlen
+        - gomnd
+        - gocognit
+        - lll
+        - godox
+        - gochecknoglobals
+        - wsl
+
+issues:
+    exclude-rules:
+        - path: _test\.go
+          linters:
+              - dupl
+              - gosec
+              - goconst
+        - path: utility/command/command.go
+          linters:
+              - gosec
+        - text: 'G104:'
+          linters:
+              - gosec
+        - text: 'G204:'
+          linters:
+              - gosec
+
+    max-issues-per-linter: 0
+    max-same-issues: 0
+    fix: true
+    exclude-use-default: false
+    exclude-dirs:
+        - hack
+        - manifest
