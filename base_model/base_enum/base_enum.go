@@ -1,8 +1,8 @@
 package base_enum
 
 import (
-	"github.com/kysion/base-library/base_model/base_enum/internal/captcha"
-	"github.com/kysion/base-library/base_model/base_enum/internal/hook"
+	sys_enum_captcha "github.com/kysion/base-library/base_model/base_enum/internal/captcha"
+	sys_enum_hook "github.com/kysion/base-library/base_model/base_enum/internal/hook"
 )
 
 type (
