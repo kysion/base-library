@@ -5,6 +5,7 @@
 .swp
 .settings/
 .vscode/
+.history/
 vendor/
 composer.lock
 gitpush.sh
