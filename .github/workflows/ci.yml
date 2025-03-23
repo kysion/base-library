@@ -17,7 +17,7 @@ jobs:
             - name: 设置Go环境
               uses: actions/setup-go@v5
               with:
-                  go-version: '>=1.24.0'
+                  go-version: '>=1.21.0'
                   cache: true
 
             - name: 安装golangci-lint
@@ -61,7 +61,7 @@ jobs:
             - name: 设置Go环境
               uses: actions/setup-go@v5
               with:
-                  go-version: '>=1.24.0'
+                  go-version: '>=1.21.0'
                   cache: true
 
             - name: 运行Gosec安全扫描
