@@ -1,0 +1,75 @@
+name: Continuous Integration
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    lint:
+        name: Code Lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '>=1.24.0'
+                  cache: false
+
+            - name: Install golangci-lint
+              run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+            - name: Lint code
+              run: golangci-lint run ./...
+
+    test:
+        name: Unit Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '>=1.24.0'
+                  cache: true
+
+            - name: Run tests
+              run: go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+
+            - name: Upload coverage report
+              uses: codecov/codecov-action@v4
+              with:
+                  file: ./coverage.txt
+                  fail_ci_if_error: false
+                  token: ${{ secrets.CODECOV_TOKEN }}
+
+    security:
+        name: Security Scan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '>=1.24.0'
+                  cache: false
+
+            - name: Run gosec
+              run: |
+                  go install github.com/securego/gosec/v2/cmd/gosec@latest
+                  gosec -no-fail -fmt=json -out=gosec-results.json ./...
+
+            - name: Upload gosec results
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                  sarif_file: gosec-results.json
+                  category: gosec
+              if: always()
