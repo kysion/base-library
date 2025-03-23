@@ -15,6 +15,7 @@ Kysion Base Library 是一个综合性的 Go 语言工具库，提供了可复�
 - [性能表现](#性能表现)
 - [CI/CD 自动化](#cicd-自动化)
 - [版本管理](#版本管理)
+- [提交规范](#提交规范)
 - [版本兼容性](#版本兼容性)
 - [贡献指南](#贡献指南)
 - [许可证](#许可证)
@@ -213,12 +214,11 @@ Kysion Base Library 注重性能优化，各组件经过严格的基准测试验
 
 当代码合并到主分支时，会自动触发版本发布流程：
 
-1. 检出代码
-2. 运行测试验证代码质量
-3. 自动增加版本号（默认为补丁版本+1）
-4. 生成变更日志
-5. 创建 GitHub Release
-6. 更新依赖并提交更改
+1. 验证代码（依赖检查和测试）
+2. 生成分类排序的变更日志（基于提交消息）
+3. 自动化语义版本增加
+4. 创建 GitHub Release
+5. 更新依赖并提交更改
 
 ## 版本管理
 
@@ -228,15 +228,53 @@ Kysion Base Library 注重性能优化，各组件经过严格的基准测试验
 - **次版本号 (MINOR)**：新增向下兼容的功能时递增
 - **修订号 (PATCH)**：进行向下兼容的问题修正时递增
 
+### 自动版本发布
+
+项目使用semantic-release工具自动分析提交信息并决定版本升级：
+
+- `feat:` 类型的提交会触发次版本号(MINOR)递增
+- `fix:`, `perf:`, `refactor:` 等类型的提交会触发修订号(PATCH)递增
+- 包含 `BREAKING CHANGE:` 的提交会触发主版本号(MAJOR)递增
+
 ### 手动触发版本发布
 
-可以通过 GitHub Actions 手动触发版本发布，并指定版本更新类型：
+也可以通过 GitHub Actions 手动触发版本发布，并指定版本更新类型：
 
 1. 在 GitHub 仓库页面选择 "Actions" 标签
 2. 选择 "Release Go Module" 工作流
 3. 点击 "Run workflow" 按钮
 4. 选择所需的版本更新类型（patch/minor/major）
 5. 点击 "Run workflow" 开始发布流程
+
+## 提交规范
+
+为确保自动化版本管理和变更日志生成的有效性，项目采用[约定式提交](https://www.conventionalcommits.org/zh-hans/)规范。每个提交消息应遵循以下格式：
+
+```
+<类型>[可选的作用域]: <描述>
+
+[可选的正文]
+
+[可选的脚注]
+```
+
+### 提交类型
+
+常用的提交类型包括：
+
+- **feat:** 新增功能
+- **fix:** 修复bug
+- **docs:** 文档变更
+- **style:** 代码风格变更（不影响功能）
+- **refactor:** 代码重构
+- **perf:** 性能优化
+- **test:** 测试相关
+- **build:** 构建系统或依赖变更
+- **ci:** CI配置变更
+
+### 详细规范
+
+完整的提交消息约定请查看 [.github/COMMIT_CONVENTION.md](.github/COMMIT_CONVENTION.md)
 
 ## 版本兼容性
 
@@ -251,7 +289,7 @@ Kysion Base Library 注重性能优化，各组件经过严格的基准测试验
 
 1. Fork 项目仓库
 2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+3. 提交更改 (`git commit -m 'feat: 添加了一个惊人的特性'`)
 4. 推送分支 (`git push origin feature/amazing-feature`)
 5. 提交 Pull Request
 
@@ -261,6 +299,7 @@ Kysion Base Library 注重性能优化，各组件经过严格的基准测试验
 - 遵循项目的代码规范
 - 包含适当的文档和注释
 - 确保类型安全，特别是在使用泛型时
+- 遵循[约定式提交规范](https://www.conventionalcommits.org/zh-hans/)
 
 ## 许可证
 
