@@ -30,6 +30,8 @@ type Tree[T any] interface {
 	// father 为父节点
 	// 返回值为bool，表示是否满足退出条件
 	IsRoot(father T) bool
+	// MakeSubNodeSort 对子节点进行排序
+	MakeSubNodeSort()
 }
 
 // ToTree 将列表转换为树结构
@@ -54,3 +56,4 @@ func ToTree[T any](list []T, fun Tree[T]) []T {
 		return fun.IsRoot(father)
 	})
 }
+
