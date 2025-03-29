@@ -1,14 +1,17 @@
 package base_tree
 
+import "sort"
+
 // TestTree 结构实现了 Tree 接口，用于表示具有层次结构的树形数据。
 // 它包含节点信息、父节点ID、节点名称以及子节点列表。
 //
 //nolint:stylecheck
 type TestTree struct {
-	Id       int64       `json:"id"             dc:"ID" v:"integer"`                   // 节点ID，唯一标识一个节点。
-	ParentId int64       `json:"parentId"       dc:"父级ID" v:"min:0#必须是正整数"`            // 父节点ID，标识该节点的父节点。
+	Id       int64       `json:"id"             dc:"ID" v:"integer"`                              // 节点ID，唯一标识一个节点。
+	ParentId int64       `json:"parentId"       dc:"父级ID" v:"min:0#必须是正整数"`               // 父节点ID，标识该节点的父节点。
 	Name     string      `json:"name"           dc:"名称" v:"max-length:64#仅支持最大字符长度64"` // 节点名称，最大长度为64个字符。
-	Children []*TestTree `json:"children"       dc:"子树"`                               // 子节点列表，表示该节点的所有直接子节点。
+	Children []*TestTree `json:"children"       dc:"子树"`                                        // 子节点列表，表示该节点的所有直接子节点。
+	Sort     int         `json:"sort"           dc:"排序"`
 }
 
 // IsParentChildEqual 检查给定的父节点和子节点ID是否匹配。
@@ -51,4 +54,27 @@ func (d *TestTree) IsTopLevel(father *TestTree) bool {
 		return false
 	}
 	return father.ParentId == 0
+}
+
+// MakeSubNodeSort 对子节点进行排序。
+// 参数:
+//
+//	无
+//
+// 返回值: int
+//
+//	返回节点的排序值。
+func (d *TestTree) MakeSubNodeSort() {
+	if d.Children == nil || len(d.Children) <= 1 {
+		return
+	}
+
+	sort.Slice(d.Children, func(i, j int) bool {
+		// 检查 Children 中的元素是否为 nil，避免运行时错误
+		if d.Children[i] == nil || d.Children[j] == nil {
+			panic("Children contains nil elements")
+		}
+
+		return d.Children[i].Sort < d.Children[j].Sort
+	})
 }
