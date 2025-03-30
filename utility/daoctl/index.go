@@ -1,11 +1,12 @@
 package daoctl
 
 import (
+	"math"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl/internal"
-	"math"
 )
 
 // GetById 根据ID获取模型对象。
@@ -117,7 +118,7 @@ func GetAll[T any](model *gdb.Model, info *base_model.Pagination) (response *bas
 // 返回值:
 // - response: 包含查询结果和分页信息的指针。
 // - err: 执行查询过程中可能发生的错误。
-func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExport bool) (response *base_model.CollectRes[T], err error) {
+func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExport bool) (*base_model.CollectRes[T], error) {
 	// 对模型执行预处理，可能包括设置默认的查询条件等。
 	model = ExecExWhere(model)
 
@@ -141,6 +142,8 @@ func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExp
 		searchFields.PageSize = 20
 	}
 
+	var err error
+
 	// 初始化一个空的实体切片，用于存储查询结果。
 	entities := make([]T, 0)
 	// 如果是导出操作，设置页大小为-1，以获取所有记录。
@@ -154,12 +157,12 @@ func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExp
 	}
 
 	// 构建并返回包含查询结果和分页信息的响应对象。
-	response = &base_model.CollectRes[T]{
+	response := &base_model.CollectRes[T]{
 		Records:       entities,
 		PaginationRes: internal.MakePaginationArr(model, searchFields.Pagination, searchFields.Filter),
 	}
 
-	return response, nil
+	return response, err
 }
 
 // MakeModel 函数用于创建一个查询模型，并返回一个指向该模型的指针。
