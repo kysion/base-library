@@ -1,0 +1,38 @@
+name: 更新 CHANGELOG
+
+on:
+    push:
+        branches:
+            - main
+            - dev
+    workflow_dispatch:
+
+jobs:
+    changelog:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 设置 Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: 安装依赖
+              run: |
+                  npm install -g conventional-changelog-cli
+                  npm install --save-dev conventional-changelog-conventionalcommits
+
+            - name: 生成 CHANGELOG
+              run: |
+                  conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0
+
+            - name: 提交更新
+              run: |
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "GitHub Action"
+                  git add CHANGELOG.md
+                  git commit -m "docs: 更新 CHANGELOG" || echo "No changes to commit"
+                  git push
