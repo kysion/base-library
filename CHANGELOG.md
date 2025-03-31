@@ -1,3 +1,14 @@
+# Kysion Base Library 更新日志
+
+所有版本变更内容将会记录在本文件中。
+
+## [0.3.1](https://github.com/kysion/base-library/compare/v0.3.0...v0.3.1) (2025-03-31)
+
+
+### Bug Fixes
+
+* **utility/kmap:** 修正 HashMap 类型的 MarshalJSON 方法接收者 ([eecc67d](https://github.com/kysion/base-library/commit/eecc67d59fc0a79afd8c0a3758d8429193890a90))
+
 ## [](https://github.com/kysion/base-library/compare/v0.3.0...v) (2025-03-31)
 
 ### Bug Fixes
