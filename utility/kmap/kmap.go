@@ -418,7 +418,7 @@ func (m *HashMap[TK, TD]) String() string {
 }
 
 // MarshalJSON implements the interface MarshalJSON for json.Marshal.
-func (m HashMap[TK, TD]) MarshalJSON() ([]byte, error) {
+func (m *HashMap[TK, TD]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(gconv.Map(m.Map()))
 }
 
