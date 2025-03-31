@@ -28,7 +28,7 @@ jobs:
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
         steps:
             - name: 检出代码
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
@@ -51,7 +51,7 @@ jobs:
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
         steps:
             - name: 检出代码
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
                   persist-credentials: false
@@ -104,7 +104,7 @@ jobs:
             # 使用conventional-changelog生成分类的变更日志（用于workflow_dispatch触发时）
             - name: 为手动发布设置Node.js
               if: github.event_name == 'workflow_dispatch'
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: '18'
 
@@ -138,7 +138,7 @@ jobs:
             # 自动语义化发布（用于push或PR合并触发时）
             - name: 为语义化发布设置Node.js
               if: github.event_name != 'workflow_dispatch'
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: '18'
 

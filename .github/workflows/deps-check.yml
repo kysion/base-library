@@ -1,0 +1,56 @@
+name: 依赖检查
+
+on:
+    schedule:
+        - cron: '0 0 * * *' # 每天运行
+    workflow_dispatch:
+
+jobs:
+    deps-check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: 设置 Go 环境
+              uses: actions/setup-go@v4
+              with:
+                  go-version: '1.24.1'
+
+            - name: 安装依赖检查工具
+              run: go install github.com/psampaz/go-mod-outdated@latest
+
+            - name: 检查依赖更新
+              id: check
+              run: |
+                  go list -u -m -json all | go-mod-outdated -update -direct -style markdown > outdated.md
+                  if [ -s outdated.md ]; then
+                    echo "updates_available=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "updates_available=false" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: 创建更新 PR
+              if: steps.check.outputs.updates_available == 'true'
+              run: |
+                  # 创建新分支
+                  git checkout -b deps/update-$(date +%Y%m%d)
+
+                  # 更新依赖
+                  go get -u ./...
+                  go mod tidy
+
+                  # 提交更改
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "GitHub Action"
+                  git add go.mod go.sum
+                  git commit -m "chore(deps): 更新依赖"
+                  git push origin deps/update-$(date +%Y%m%d)
+
+                  # 创建 PR
+                  gh pr create \
+                    --title "chore(deps): 更新依赖 $(date +%Y-%m-%d)" \
+                    --body "自动依赖更新" \
+                    --label "dependencies" \
+                    --base dev
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

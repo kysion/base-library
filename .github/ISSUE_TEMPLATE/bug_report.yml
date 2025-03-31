@@ -1,0 +1,47 @@
+name: 🐛 Bug 报告
+description: 创建一个 bug 报告以帮助我们改进
+title: '[Bug]: '
+labels: ['bug']
+body:
+    - type: markdown
+      attributes:
+          value: |
+              感谢您抽出时间填写这份 bug 报告！
+    - type: input
+      id: version
+      attributes:
+          label: 版本
+          description: 您正在使用的版本是什么？
+          placeholder: 例如：v1.0.0
+      validations:
+          required: true
+    - type: textarea
+      id: what-happened
+      attributes:
+          label: 发生了什么？
+          description: 请详细描述您遇到的问题
+          placeholder: 请尽可能详细地描述问题...
+      validations:
+          required: true
+    - type: textarea
+      id: reproduction
+      attributes:
+          label: 复现步骤
+          description: 如何复现这个问题？
+          placeholder: |
+              1. 执行 '...'
+              2. 调用 '....'
+              3. 出现错误
+      validations:
+          required: true
+    - type: textarea
+      id: expected
+      attributes:
+          label: 期望行为
+          description: 您期望看到什么？
+    - type: textarea
+      id: logs
+      attributes:
+          label: 相关日志
+          description: 请复制并粘贴任何相关的日志输出
+          render: shell
