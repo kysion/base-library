@@ -8,7 +8,6 @@
 ### Features
 
 * **base_tree:** 为树结构添加子节点排序功能 ([9cf57f5](https://github.com/kysion/base-library/commit/9cf57f5878e7b82816ab083a73564f4549251091))
-
 ## [0.2.4](https://github.com/kysion/base-library/compare/v0.2.3...v0.2.4) (2025-03-23)
 
 ### Features
