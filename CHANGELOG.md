@@ -1,8 +1,18 @@
-## [](https://github.com/kysion/base-library/compare/v0.2.0...v) (2025-03-31)
+## [](https://github.com/kysion/base-library/compare/v0.3.0...v) (2025-03-31)
+
+### Bug Fixes
+
+* **utility/kmap:** 修正 HashMap 类型的 MarshalJSON 方法接收者 ([eecc67d](https://github.com/kysion/base-library/commit/eecc67d59fc0a79afd8c0a3758d8429193890a90))
+## [0.3.0](https://github.com/kysion/base-library/compare/v0.2.4...v0.3.0) (2025-03-29)
 
 ### Features
 
 * **base_tree:** 为树结构添加子节点排序功能 ([9cf57f5](https://github.com/kysion/base-library/commit/9cf57f5878e7b82816ab083a73564f4549251091))
+
+## [0.2.4](https://github.com/kysion/base-library/compare/v0.2.3...v0.2.4) (2025-03-23)
+
+### Features
+
 * **enum:** 优化枚举工具包并添加性能测试结果 ([dbde901](https://github.com/kysion/base-library/commit/dbde90111608a4ea10da431d5acd8c16d8761ce8))
 * **utility:** 添加枚举工具包 ([564e36f](https://github.com/kysion/base-library/commit/564e36fab3028a45a0c070aff054a00c537ff649))
 ## [0.2.0](https://github.com/kysion/base-library/compare/v0.1.9...v0.2.0) (2025-01-15)
