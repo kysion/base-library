@@ -148,9 +148,9 @@ func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExp
 	entities := make([]T, 0)
 	// 如果是导出操作，设置页大小为-1，以获取所有记录。
 	if IsExport {
-		searchFields.PageSize = -1
 		// 执行查询并存储结果到entities切片中。
 		err = queryDb.Scan(&entities)
+		searchFields.PageSize = len(entities)
 	} else {
 		// 执行分页查询，并存储结果到entities切片中。
 		err = queryDb.Page(searchFields.PageNum, searchFields.PageSize).Scan(&entities)
