@@ -1,4 +1,8 @@
-## [](https://github.com/kysion/base-library/compare/v0.3.1...v) (2025-03-31)
+## [](https://github.com/kysion/base-library/compare/v0.3.1...v) (2025-04-08)
+
+### Bug Fixes
+
+* **utility/daoctl:** 修正导出操作的分页逻辑 ([f92821f](https://github.com/kysion/base-library/commit/f92821fda7fcb9a11192e504f4c55a7464a49643))
 ## [0.3.1](https://github.com/kysion/base-library/compare/v0.3.0...v0.3.1) (2025-03-31)
 
 ### Bug Fixes
