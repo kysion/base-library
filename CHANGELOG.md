@@ -1,32 +1,29 @@
-# Kysion Base Library 更新日志
+## [](https://github.com/kysion/base-library/compare/v0.3.2...v) (2025-04-10)
 
-所有版本变更内容将会记录在本文件中。
+### Features
 
+* **base_model:** 在 FilterInfo 结构中添加子查询字段，并优化查询逻辑 ([064c052](https://github.com/kysion/base-library/commit/064c05274c7fd803bc98c28773d8e2061178304c))
 ## [0.3.2](https://github.com/kysion/base-library/compare/v0.3.1...v0.3.2) (2025-04-08)
 
 ### Bug Fixes
 
 * **utility/daoctl:** 修正导出操作的分页逻辑 ([f92821f](https://github.com/kysion/base-library/commit/f92821fda7fcb9a11192e504f4c55a7464a49643))
-
 ## [0.3.1](https://github.com/kysion/base-library/compare/v0.3.0...v0.3.1) (2025-03-31)
 
 ### Bug Fixes
 
 * **utility/kmap:** 修正 HashMap 类型的 MarshalJSON 方法接收者 ([eecc67d](https://github.com/kysion/base-library/commit/eecc67d59fc0a79afd8c0a3758d8429193890a90))
-
 ## [0.3.0](https://github.com/kysion/base-library/compare/v0.2.4...v0.3.0) (2025-03-29)
 
 ### Features
 
 * **base_tree:** 为树结构添加子节点排序功能 ([9cf57f5](https://github.com/kysion/base-library/commit/9cf57f5878e7b82816ab083a73564f4549251091))
-
 ## [0.2.4](https://github.com/kysion/base-library/compare/v0.2.3...v0.2.4) (2025-03-23)
 
 ### Features
 
 * **enum:** 优化枚举工具包并添加性能测试结果 ([dbde901](https://github.com/kysion/base-library/commit/dbde90111608a4ea10da431d5acd8c16d8761ce8))
 * **utility:** 添加枚举工具包 ([564e36f](https://github.com/kysion/base-library/commit/564e36fab3028a45a0c070aff054a00c537ff649))
-
 ## [0.2.0](https://github.com/kysion/base-library/compare/v0.1.9...v0.2.0) (2025-01-15)
 
 ### Features
@@ -62,13 +59,11 @@
 * 提升效率、增加线程安全、增加可读性、优化大文件防止内存占用高的问题 ([692c6d0](https://github.com/kysion/base-library/commit/692c6d0854df77ed4e5897e03925adadb07ce662))
 * 新增数据缓存忽略控制支持、新增model 前置条件附加支持、丰富逻辑实现相关注释 ([e5ba9b2](https://github.com/kysion/base-library/commit/e5ba9b2f2c6fe28de1cc6e17e1dc70357b7383e4))
 * 移除对idgen的依赖，增加工厂方法来初始化权限工厂方法对象，增加工厂初始化校验逻辑，增加代码可读性 ([7876b17](https://github.com/kysion/base-library/commit/7876b172f5fde2bb6cdf3d1a1563cdc5a45cc883))
-
 ## [0.0.33](https://github.com/kysion/base-library/compare/v0.0.32...v0.0.33) (2024-05-11)
 
 ### Features
 
 * 添加部分方法封装 ([20ff438](https://github.com/kysion/base-library/commit/20ff43877b02540038ab8646158f1bce742ac89e))
-
 ## [0.0.32](https://github.com/kysion/base-library/compare/v0.0.31...v0.0.32) (2024-02-23)
 
 ### Features
@@ -79,7 +74,6 @@
 
 * 修复SQL查询通用模块中Count的Bug ([068812d](https://github.com/kysion/base-library/commit/068812dbf540fd513cecaac270c96a8521d75489))
 * 修复过滤拓展字段方法的逻辑 ([5ca823d](https://github.com/kysion/base-library/commit/5ca823d18e929f813b51309c86430694af7bdb4b))
-
 ## [0.0.30](https://github.com/kysion/base-library/compare/v0.0.29...v0.0.30) (2023-12-21)
 
 ### Features
@@ -89,7 +83,6 @@
 ### Bug Fixes
 
 * 修复swaggerPath错误Bug ([358f0e2](https://github.com/kysion/base-library/commit/358f0e2ceb4d819d0cbb9d73fb3112fc037f0b13))
-
 ## [0.0.28](https://github.com/kysion/base-library/compare/v0.0.27...v0.0.28) (2023-11-20)
 
 ### Features
@@ -102,7 +95,6 @@
 * 优化权限工程定义 ([1661d97](https://github.com/kysion/base-library/commit/1661d97a923ba0314de889159e52e973dc5b9a10))
 * 枚举新增 Has 方法，判断是否包含指定枚举值 ([5f516e5](https://github.com/kysion/base-library/commit/5f516e54c7ea1f318f471e5e026d00f54127c106))
 * 枚举类型新增 Add、Remove 方法 ([9a88356](https://github.com/kysion/base-library/commit/9a883568aac2c504eddf0a6c4cdf73a78a3aaf3a))
-
 ## [0.0.21](https://github.com/kysion/base-library/compare/v0.0.20...v0.0.21) (2023-07-29)
 
 ### Features
@@ -125,5 +117,4 @@
 ### Performance Improvements
 
 * 优化枚举类型应用规范 ([7bec7eb](https://github.com/kysion/base-library/commit/7bec7eb287046498cd5093443de03eecc900f757))
-
 ## [0.0.3](https://github.com/kysion/base-library/compare/v0.0.1...v0.0.3) (2023-02-19)
