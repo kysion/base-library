@@ -1,45 +1,12 @@
 package internal
 
 import (
-	"math"
-
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
 )
-
-// MakeCountArr 生成计数数组
-// 该函数的目的是为了统计满足过滤条件的记录总数
-// 参数:
-//
-//	db: 数据库模型，用于执行数据库操作
-//	searchFields: 过滤条件数组，包含需要进行过滤的字段信息
-//
-// 返回值:
-//
-//	total: 满足条件的记录总数
-func MakeCountArr(db *gdb.Model, searchFields []base_model.FilterInfo) (total int64) {
-	// 使用MakeBuilder函数根据提供的数据库模型和过滤条件构建查询语句
-	db, err := MakeBuilder(db, searchFields)
-	if err != nil {
-		// 如果构建查询语句过程中发生错误，直接返回0
-		return 0
-	}
-
-	// 初始化计数变量
-	count := 0
-	// 执行查询并统计满足条件的记录数，不需实际加载数据
-	err = db.ScanAndCount(nil, &count, false)
-	if err != nil {
-		// 如果查询执行出错，直接返回0
-		return 0
-	}
-
-	// 将统计得到的总数转换为int64类型并返回
-	return gconv.Int64(count)
-}
 
 // MakeOrderBy1 根据指定的排序条件更新数据库查询模型
 // 该函数接收一个数据库模型和一个排序条件数组，根据数组中的排序条件
@@ -66,7 +33,7 @@ func MakeOrderBy1(db *gdb.Model, orderBy []base_model.OrderBy) *gdb.Model {
 //	*gdb.Model - 更新了排序条件的数据库查询模型
 func MakeOrderBy(db *gdb.Model, orderBy []base_model.OrderBy) *gdb.Model {
 	// 检查 orderBy 是否为空且不为 nil
-	if orderBy == nil || len(orderBy) == 0 {
+	if len(orderBy) == 0 {
 		return db
 	}
 
@@ -102,9 +69,11 @@ func MakeOrderBy(db *gdb.Model, orderBy []base_model.OrderBy) *gdb.Model {
 // - 如果构建过程中出现错误，则返回错误信息。
 func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Model, error) {
 	// 检查searchFieldArr是否为空，为空则直接返回原始模型
-	if searchFieldArr == nil || len(searchFieldArr) == 0 {
+	if len(searchFieldArr) == 0 {
 		return db, nil
 	}
+
+	builder := db.Builder()
 
 	// 遍历searchFieldArr，对每个字段构建查询条件
 	for index, field := range searchFieldArr {
@@ -134,15 +103,15 @@ func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Mo
 			// 处理IN查询条件
 			if modifierClause == "not" {
 				if field.IsOrWhere {
-					db = db.WhereOrNotIn(field.Field, field.Value)
+					builder = builder.WhereOrNotIn(field.Field, field.Value)
 				} else {
-					db = db.WhereNotIn(field.Field, field.Value)
+					builder = builder.WhereNotIn(field.Field, field.Value)
 				}
 			} else {
 				if field.IsOrWhere {
-					db = db.WhereOrIn(field.Field, field.Value)
+					builder = builder.WhereOrIn(field.Field, field.Value)
 				} else {
-					db = db.WhereIn(field.Field, field.Value)
+					builder = builder.WhereIn(field.Field, field.Value)
 				}
 			}
 
@@ -157,15 +126,15 @@ func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Mo
 
 			if modifierClause == "not" {
 				if field.IsOrWhere {
-					db = db.WhereOrNotBetween(field.Field, minValue, maxValue)
+					builder = builder.WhereOrNotBetween(field.Field, minValue, maxValue)
 				} else {
-					db = db.WhereNotBetween(field.Field, minValue, maxValue)
+					builder = builder.WhereNotBetween(field.Field, minValue, maxValue)
 				}
 			} else {
 				if field.IsOrWhere {
-					db = db.WhereOrBetween(field.Field, minValue, maxValue)
+					builder = builder.WhereOrBetween(field.Field, minValue, maxValue)
 				} else {
-					db = db.WhereBetween(field.Field, minValue, maxValue)
+					builder = builder.WhereBetween(field.Field, minValue, maxValue)
 				}
 			}
 
@@ -173,44 +142,44 @@ func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Mo
 			// 处理LIKE查询条件
 			if modifierClause == "not" {
 				if field.IsOrWhere {
-					db = db.WhereOrNotLike(field.Field, field.Value)
+					builder = builder.WhereOrNotLike(field.Field, field.Value)
 				} else {
-					db = db.WhereNotLike(field.Field, field.Value)
+					builder = builder.WhereNotLike(field.Field, field.Value)
 				}
 			} else {
 				if field.IsOrWhere {
-					db = db.WhereOrLike(field.Field, field.Value)
+					builder = builder.WhereOrLike(field.Field, field.Value)
 				} else {
-					db = db.WhereLike(field.Field, gconv.String(field.Value))
+					builder = builder.WhereLike(field.Field, gconv.String(field.Value))
 				}
 			}
 
 		default:
 			// 处理其他查询条件，如>、<、=等
 			if gstr.Contains(field.Field, "&") {
-				db = db.Wheref(field.Field+" "+field.Where+" ?", gconv.String(field.Value))
+				builder = builder.Wheref(field.Field+" "+field.Where+" ?", gconv.String(field.Value))
 			} else {
 				// 使用映射表简化代码逻辑
 				switch field.Where {
 				case ">":
-					db = applyComparisonOperator(db, field, "GT")
+					builder = applyComparisonOperator(builder, field, "GT")
 				case ">=":
-					db = applyComparisonOperator(db, field, "GTE")
+					builder = applyComparisonOperator(builder, field, "GTE")
 				case "<":
-					db = applyComparisonOperator(db, field, "LT")
+					builder = applyComparisonOperator(builder, field, "LT")
 				case "<=":
-					db = applyComparisonOperator(db, field, "LTE")
+					builder = applyComparisonOperator(builder, field, "LTE")
 				case "<>":
 					if field.IsOrWhere {
-						db = db.WhereOrNotIn(field.Field, field.Value)
+						builder = builder.WhereOrNotIn(field.Field, field.Value)
 					} else {
-						db = db.WhereNotIn(field.Field, field.Value)
+						builder = builder.WhereNotIn(field.Field, field.Value)
 					}
 				case "=":
 					if field.IsOrWhere {
-						db = db.WhereOr(field.Field, field.Value)
+						builder = builder.WhereOr(field.Field, field.Value)
 					} else {
-						db = db.Where(field.Field, field.Value)
+						builder = builder.Where(field.Field, field.Value)
 					}
 				default:
 					// 如果查询操作符不支持，则返回错误
@@ -218,10 +187,17 @@ func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Mo
 				}
 			}
 		}
-	}
 
+		if len(field.Children) > 0 {
+			if field.IsOrWhere {
+				return MakeBuilder(db.WhereOr(builder), field.Children)
+			} else {
+				return MakeBuilder(db.Where(builder), field.Children)
+			}
+		}
+	}
 	// 返回构建完成的数据库模型对象
-	return db, nil
+	return db.Where(builder), nil
 }
 
 // applyComparisonOperator 辅助函数，用于应用比较操作符
@@ -231,7 +207,7 @@ func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Mo
 // - operator: 操作符类型 (GT, GTE, LT, LTE)
 // 返回值:
 // - 更新后的数据库模型
-func applyComparisonOperator(db *gdb.Model, field base_model.FilterInfo, operator string) *gdb.Model {
+func applyComparisonOperator(db *gdb.WhereBuilder, field base_model.FilterInfo, operator string) *gdb.WhereBuilder {
 	if field.IsOrWhere {
 		switch operator {
 		case "GT":
@@ -256,48 +232,4 @@ func applyComparisonOperator(db *gdb.Model, field base_model.FilterInfo, operato
 		}
 	}
 	return db
-}
-
-// MakePaginationArr 生成分页结果数组
-// 参数:
-// db: 数据库模型指针，用于执行查询
-// pagination: 分页参数，包含页码和每页大小等信息
-// searchFields: 用于搜索的字段数组，用于过滤查询结果
-// 返回值:
-// base_model.PaginationRes: 分页结果结构，包含分页信息和查询结果总数
-func MakePaginationArr(db *gdb.Model, pagination base_model.Pagination, searchFields []base_model.FilterInfo) base_model.PaginationRes {
-	// 计算满足条件的总记录数
-	total := MakeCountArr(db, searchFields)
-
-	// 准备返回的分页结果结构
-	result := base_model.PaginationRes{
-		Pagination: pagination,
-		Total:      total,
-	}
-
-	// 如果总记录数为 0，直接返回空结果
-	if total == 0 {
-		result.PageTotal = 0
-		return result
-	}
-
-	// 如果每页大小为 -1（表示不分页）
-	if pagination.PageSize == -1 {
-		// 将总记录数设置为每页大小
-		result.PageSize = gconv.Int(total)
-
-		// 如果总记录数为 0，设置默认每页大小为 20
-		if result.PageSize == 0 {
-			result.PageSize = 20
-		}
-
-		// 不分页时总页数为 1
-		result.PageTotal = 1
-		return result
-	}
-
-	// 计算总页数，向上取整
-	result.PageTotal = gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(pagination.PageSize)))
-
-	return result
 }

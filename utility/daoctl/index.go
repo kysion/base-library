@@ -143,6 +143,7 @@ func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExp
 	}
 
 	var err error
+	count := 0
 
 	// 初始化一个空的实体切片，用于存储查询结果。
 	entities := make([]T, 0)
@@ -153,13 +154,19 @@ func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExp
 		searchFields.PageSize = len(entities)
 	} else {
 		// 执行分页查询，并存储结果到entities切片中。
-		err = queryDb.Page(searchFields.PageNum, searchFields.PageSize).Scan(&entities)
+		err = queryDb.Page(searchFields.PageNum, searchFields.PageSize).ScanAndCount(&entities, &count, false)
 	}
 
-	// 构建并返回包含查询结果和分页信息的响应对象。
 	response := &base_model.CollectRes[T]{
-		Records:       entities,
-		PaginationRes: internal.MakePaginationArr(model, searchFields.Pagination, searchFields.Filter),
+		Records: entities,
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
+				PageNum:  searchFields.PageNum,
+				PageSize: searchFields.PageSize,
+			},
+			Total:     int64(count),
+			PageTotal: gconv.Int(math.Ceil(gconv.Float64(count) / gconv.Float64(searchFields.PageSize))),
+		},
 	}
 
 	return response, err
