@@ -1,8 +1,9 @@
-## [](https://github.com/kysion/base-library/compare/v0.3.1...v) (2025-04-10)
+## [](https://github.com/kysion/base-library/compare/v0.3.2...v) (2025-04-10)
 
 ### Features
 
 * **base_model:** 在 FilterInfo 结构中添加子查询字段，并优化查询逻辑 ([064c052](https://github.com/kysion/base-library/commit/064c05274c7fd803bc98c28773d8e2061178304c))
+## [0.3.2](https://github.com/kysion/base-library/compare/v0.3.1...v0.3.2) (2025-04-08)
 
 ### Bug Fixes
 
