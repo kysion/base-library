@@ -3,13 +3,25 @@ package base_funs
 import (
 	"context"
 	"fmt"
-	"github.com/gogf/gf/v2/container/garray"
-	"github.com/gogf/gf/v2/text/gstr"
-	"github.com/kysion/base-library/base_model"
 	"reflect"
 	"sync"
 	"time"
+
+	"github.com/gogf/gf/v2/container/garray"
+	"github.com/gogf/gf/v2/text/gstr"
+	"github.com/kysion/base-library/base_model"
 )
+
+// Ternary 实现类似三元操作符的功能
+// condition: 条件表达式
+// trueVal: 条件为真时返回的值
+// falseVal: 条件为假时返回的值
+func Ternary[T any](condition bool, trueVal, falseVal T) T {
+	if condition {
+		return trueVal
+	}
+	return falseVal
+}
 
 // Contains 检查给定的切片中是否包含指定的元素。
 //
@@ -27,7 +39,7 @@ import (
 //	该函数使用泛型定义，支持多种类型的操作，提高了代码的通用性和复用性。
 func Contains[T comparable](slice []T, element T) bool {
 	// 检查切片是否为空或长度为0，如果是，则直接返回 false，因为切片中不可能包含指定元素。
-	if slice == nil || len(slice) == 0 {
+	if len(slice) == 0 {
 		return false
 	}
 
