@@ -3,6 +3,7 @@ package base_funs
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"sync"
 	"time"
@@ -12,11 +13,52 @@ import (
 	"github.com/kysion/base-library/base_model"
 )
 
+// RandomInt 生成一个介于 min 和 max 之间的随机整数
+// min: 最小值
+// max: 最大值
+// 返回值: 一个介于 min 和 max 之间的随机整数
+func RandomInt(min, max int) int {
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+	return min + r.Intn(max-min+1)
+}
+
+// SetInterval 模拟 JavaScript 中的 setInterval 函数
+// interval 是执行任务的时间间隔
+// fn 是要周期性执行的函数
+// 返回一个通道，通过关闭该通道可以停止定时器
+func SetInterval(interval time.Duration, fn func()) chan struct{} {
+	stop := make(chan struct{})
+	ticker := time.NewTicker(interval)
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				// 检查当前时间是否大于 21 点
+				currentHour := time.Now().Hour()
+				currentMinute := time.Now().Minute()
+				if currentHour >= 21 && currentMinute >= 25 {
+					ticker.Stop()
+					close(stop)
+					return
+				}
+				fn()
+			case <-stop:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
+
+	return stop
+}
+
 // Ternary 实现类似三元操作符的功能
 // condition: 条件表达式
 // trueVal: 条件为真时返回的值
 // falseVal: 条件为假时返回的值
-func Ternary[T any](condition bool, trueVal, falseVal T) T {
+func If[T any](condition bool, trueVal, falseVal T) T {
 	if condition {
 		return trueVal
 	}
@@ -96,14 +138,6 @@ func FilterEmpty(slice []string) []string {
 	}
 	// 返回最终的结果切片。
 	return result
-}
-
-func If[R any](condition bool, trueVal, falseVal R) R {
-	if condition {
-		return trueVal
-	} else {
-		return falseVal
-	}
 }
 
 // SearchFilterEx 支持增加拓展字段，会提炼拓展字段的最新过滤题条件模型返回，并支持从原始的过滤模型剔除不需要的条件
