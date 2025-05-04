@@ -13,6 +13,46 @@ import (
 	"github.com/kysion/base-library/base_model"
 )
 
+// MaxBy 函数用于找到切片中具有最大值的元素
+// 参数:
+// - slice: 要查找的切片，类型为 T 的切片
+// - getValue: 一个函数，用于从切片中的元素获取一个整数值
+// 返回值:
+// - 返回一个整数值，表示切片中具有最大值的元素的值
+func MaxBy[T any](slice []T, getValue func(T) int) int {
+	if len(slice) == 0 {
+		return 0
+	}
+	maxVal := getValue(slice[0])
+	for _, item := range slice[1:] {
+		val := getValue(item)
+		if val > maxVal {
+			maxVal = val
+		}
+	}
+	return maxVal
+}
+
+// MinBy 函数用于找到切片中具有最小值的元素
+// 参数:
+// - slice: 要查找的切片，类型为 T 的切片
+// - getValue: 一个函数，用于从切片中的元素获取一个整数值
+// 返回值:
+// - 返回一个整数值，表示切片中具有最小值的元素的值
+func MinBy[T any](slice []T, getValue func(T) int) int {
+	if len(slice) == 0 {
+		return 0
+	}
+	minVal := getValue(slice[0])
+	for _, item := range slice[1:] {
+		val := getValue(item)
+		if val < minVal {
+			minVal = val
+		}
+	}
+	return minVal
+}
+
 // RandomInt 生成一个介于 min 和 max 之间的随机整数
 // min: 最小值
 // max: 最大值
@@ -93,6 +133,20 @@ func Contains[T comparable](slice []T, element T) bool {
 	}
 	// 如果遍历完切片后没有找到指定元素，则返回 false。
 	return false
+}
+
+// ExtractProperty 函数用于从切片中提取指定属性的值
+// 参数:
+// - slice: 要处理的切片，类型为 T 的切片
+// - getProperty: 一个函数，用于从切片中的元素获取一个值
+// 返回值:
+// - 返回一个包含从切片中提取的值的切片，类型为 R
+func ExtractProperty[T any, R any](slice []T, getProperty func(T) R) []R {
+	result := make([]R, len(slice))
+	for i, item := range slice {
+		result[i] = getProperty(item)
+	}
+	return result
 }
 
 // Unique 函数用于去除给定切片中的重复元素，返回一个只包含唯一元素的新切片。
