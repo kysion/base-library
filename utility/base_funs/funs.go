@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/kysion/base-library/base_model"
 )
@@ -135,6 +134,104 @@ func Contains[T comparable](slice []T, element T) bool {
 	return false
 }
 
+// FindInSlice 用于在切片中查找满足条件的元素
+// 参数说明:
+//   - slice: 要搜索的切片，类型为 T 的切片
+//   - predicate: 判断函数，接收类型为 T 的元素，返回是否匹配
+//
+// 返回值:
+//   - int: 找到的元素索引，如果未找到返回 -1
+//   - T: 找到的元素值，如果未找到返回零值
+//   - bool: 是否找到匹配的元素
+//
+// 注意:
+//   - 如果 slice 为 nil 或 predicate 为 nil，将返回未找到的结果
+//   - 对于空切片，将直接返回未找到的结果
+func FindInSlice[T any](slice []T, predicate func(T) bool) (int, T, bool) {
+	// 参数验证
+	if slice == nil || predicate == nil || len(slice) == 0 {
+		var zero T
+		return -1, zero, false
+	}
+
+	// 使用 for range 遍历切片
+	for i, item := range slice {
+		if predicate(item) {
+			return i, item, true
+		}
+	}
+
+	var zero T
+	return -1, zero, false
+}
+
+// HasInSlice 用于检查切片中是否存在满足条件的元素
+// 参数说明:
+//   - slice: 要检查的切片，类型为 T 的切片
+//   - predicate: 判断函数，接收类型为 T 的元素，返回是否匹配
+//
+// 返回值:
+//   - bool: 是否存在匹配的元素
+//
+// 注意:
+//   - 如果 slice 为 nil 或 predicate 为 nil，将返回 false
+//   - 对于空切片，将直接返回 false
+//   - 当切片长度大于 1000 时，将使用并行处理提高性能
+func HasInSlice[T any](slice []T, predicate func(T) bool) bool {
+	// 参数验证
+	if slice == nil || predicate == nil || len(slice) == 0 {
+		return false
+	}
+
+	// 对于较小的切片，使用普通遍历
+	if len(slice) <= 1000 {
+		for _, item := range slice {
+			if predicate(item) {
+				return true
+			}
+		}
+		return false
+	}
+
+	// 对于较大的切片，使用并行处理
+	const numWorkers = 4
+	chunkSize := (len(slice) + numWorkers - 1) / numWorkers
+	found := make(chan bool, 1)
+	var wg sync.WaitGroup
+
+	// 启动多个 goroutine 并行处理
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func(start int) {
+			defer wg.Done()
+			end := start + chunkSize
+			if end > len(slice) {
+				end = len(slice)
+			}
+			for j := start; j < end; j++ {
+				if predicate(slice[j]) {
+					select {
+					case found <- true:
+					default:
+					}
+					return
+				}
+			}
+		}(i * chunkSize)
+	}
+
+	// 等待所有 goroutine 完成
+	go func() {
+		wg.Wait()
+		select {
+		case found <- false:
+		default:
+		}
+	}()
+
+	return <-found
+}
+
 // ExtractProperty 函数用于从切片中提取指定属性的值
 // 参数:
 // - slice: 要处理的切片，类型为 T 的切片
@@ -194,47 +291,79 @@ func FilterEmpty(slice []string) []string {
 	return result
 }
 
-// SearchFilterEx 支持增加拓展字段，会提炼拓展字段的最新过滤题条件模型返回，并支持从原始的过滤模型剔除不需要的条件
-func SearchFilterEx(search *base_model.SearchParams, fields ...string) *base_model.SearchParams {
+// SearchFilterEx 根据指定的字段列表对搜索参数进行过滤和分类
+// 参数说明:
+//   - search: 原始搜索参数，包含过滤条件
+//   - excludeSearchFields: 需要过滤的字段列表，支持点号分隔的字段路径（如 "user.name"）
+//
+// 返回值:
+//   - *base_model.SearchParams: 返回一个新的搜索参数对象，其中 Filter 字段包含匹配指定字段的过滤条件
+//
+// 处理逻辑:
+//  1. 将过滤条件分为两类：匹配指定字段的条件和不匹配的条件
+//  2. 对于每个过滤条件，检查其字段是否在指定的字段列表中
+//  3. 支持字段路径匹配（如 "user.name" 可以匹配 "user" 开头的字段）
+//  4. 确保相同字段的过滤条件不会重复
+func SearchFilterEx(search *base_model.SearchParams, excludeSearchFields ...string) *base_model.SearchParams {
+	// 参数验证
+	if search == nil {
+		return &base_model.SearchParams{}
+	}
+
+	// 初始化结果对象
 	result := &base_model.SearchParams{}
-	newFilter := make([]base_model.FilterInfo, 0)
-	newSearchFilter := make([]base_model.FilterInfo, 0)
-	newSearchFilterStr := garray.NewStrArray()
+
+	// 使用 map 替代 garray.StrArray 进行字段去重
+	fieldMap := make(map[string]struct{})
+	searchFilterMap := make(map[string]base_model.FilterInfo)
+
+	// 预处理字段列表，创建字段映射
+	fieldPrefixMap := make(map[string]struct{})
+	for _, field := range excludeSearchFields {
+		field = gstr.ToLower(gstr.CaseSnake(field))
+		fieldMap[field] = struct{}{}
+		// 处理字段路径
+		if parts := gstr.Split(field, "."); len(parts) > 1 {
+			fieldPrefixMap[parts[0]] = struct{}{}
+		}
+	}
+
+	// 存储匹配指定字段的过滤条件
+	newFilter := make([]base_model.FilterInfo, 0, len(search.Filter))
+	// 存储不匹配指定字段的过滤条件
+	newSearchFilter := make([]base_model.FilterInfo, 0, len(search.Filter))
 
 	for _, info := range search.Filter {
-		//count := len(result.Filter)
-		ss := true
-		for _, field := range fields {
-			split := gstr.Split(field, ".")
-			if gstr.ToLower(gstr.CaseSnake(split[0])) == gstr.ToLower(gstr.CaseSnake(info.Field)) && len(split) > 1 {
-				ss = false
-			}
-			if gstr.ToLower(gstr.CaseSnake(info.Field)) == gstr.ToLower(gstr.CaseSnake(split[0])) {
-				newFilter = append(newFilter, info)
-				break
-			}
+		field := gstr.ToLower(gstr.CaseSnake(info.Field))
+		shouldAddToSearchFilter := true
 
+		// 检查字段是否匹配
+		if _, exists := fieldMap[field]; exists {
+			// 完全匹配的情况
+			newFilter = append(newFilter, info)
+			shouldAddToSearchFilter = false
+		} else if _, exists := fieldPrefixMap[field]; exists {
+			// 字段路径匹配的情况
+			shouldAddToSearchFilter = false
 		}
-		//if count == len(result.Filter) {
-		//  newFilter = append(newFilter, info)
-		//}
 
-		if ss {
-			for _, filterInfo := range newSearchFilter {
-				if !newSearchFilterStr.Contains(filterInfo.Field) || (newSearchFilterStr.Contains(filterInfo.Field) && info.Value != filterInfo.Value) {
-					newSearchFilterStr.Append(info.Field)
-					newSearchFilter = append(newSearchFilter, info)
-					break
-				}
-			}
-			if !newSearchFilterStr.Contains(info.Field) {
-				newSearchFilterStr.Append(info.Field)
-				newSearchFilter = append(newSearchFilter, info)
+		// 处理不匹配指定字段的过滤条件
+		if shouldAddToSearchFilter {
+			// 使用 map 进行去重
+			if existingInfo, exists := searchFilterMap[field]; !exists || existingInfo.Value != info.Value {
+				searchFilterMap[field] = info
 			}
 		}
 	}
 
+	// 将 map 转换回切片
+	for _, info := range searchFilterMap {
+		newSearchFilter = append(newSearchFilter, info)
+	}
+
+	// 更新原始搜索参数的过滤条件
 	search.Filter = newSearchFilter
+	// 设置结果对象的过滤条件
 	result.Filter = newFilter
 
 	return result
@@ -382,7 +511,7 @@ func Throttle(f func(), interval time.Duration) func() {
 	在闭包函数中，通过互斥锁保证并发安全，停止之前的定时器，创建一个新的定时器，并在指定的时间间隔后执行函数f。
 	这样可以避免在短时间内频繁调用函数f，达到防抖的效果。
  通俗理解：
-	可以想象成一个需要“冷静一下”的机制。
+	可以想象成一个需要"冷静一下"的机制。
 	就好比你在不停地按一个按钮，但系统只在你最后一次按完并经过一段安静时间（防抖时间间隔）后，才真正去执行相应的操作。
 	在这期间，不管你按得多频繁，只有最后一次按下去且等待一段时间没再按，才会触发实际动作。
 */
