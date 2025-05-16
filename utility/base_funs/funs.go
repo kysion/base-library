@@ -12,6 +12,23 @@ import (
 	"github.com/kysion/base-library/base_model"
 )
 
+// 泛型工厂函数 - 支持创建泛型结构体实例
+func CreateGenericInstance[T any]() (T, error) {
+	var zero T
+	// 获取泛型类型信息
+	typ := reflect.TypeOf(zero).Elem()
+
+	// 验证是否为结构体类型
+	if typ.Kind() != reflect.Struct {
+		return zero, fmt.Errorf("type %v is not a struct", typ)
+	}
+
+	// 创建结构体实例
+	instance := reflect.New(typ).Interface()
+
+	return instance.(T), nil
+}
+
 // MaxBy 函数用于找到切片中具有最大值的元素
 // 参数:
 // - slice: 要查找的切片，类型为 T 的切片
