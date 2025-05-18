@@ -463,12 +463,12 @@ func AttrMake[T any, TP any](ctx context.Context, key string, builder func() TP)
 	v := ctx.Value(key)
 
 	// 初始化一个泛型数据结构，用于存储属性键值和构建的实例。
-	var data base_model.KeyValueT[string, func(data TP)]
+	var kv base_model.KeyValueT[string, func(data TP)]
 	// 尝试将获取的值断言为目标类型。
 	if v, ok := v.(base_model.KeyValueT[string, func(data TP)]); ok {
 		// 如果类型断言成功，初始化 data 并使用 builder 函数创建一个实例。
-		data = v
-		data.Value(builder())
+		kv = v
+		kv.Value(builder())
 	} else {
 		// 如果类型断言失败，输出错误信息。
 		fmt.Println("Type assertion failed")
