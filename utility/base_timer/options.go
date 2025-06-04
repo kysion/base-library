@@ -10,7 +10,7 @@ import (
 // 用于定义间隔执行任务的各种参数和行为
 type SetIntervalOptions struct {
 	Interval  time.Duration                                                     // 执行间隔，两次执行开始时间的间隔
-	Fn        func(count int64, ticker *time.Ticker, ctx context.Context) error // 回调函数，count 表示当前执行次数，ticker 是定时器对象，ctx 是上下文
+	Run       func(count int64, ticker *time.Ticker, ctx context.Context) error // 回调函数，count 表示当前执行次数，ticker 是定时器对象，ctx 是上下文
 	Sync      bool                                                              // 是否同步执行（默认异步），同步模式下会等待当前任务执行完成后再开始下一次计时
 	Immediate bool                                                              // 是否立即执行第一次，true 表示立即执行，false 表示等待一个间隔后再执行
 	OnError   func(err error)                                                   // 错误处理函数，当任务执行出错时调用
@@ -29,8 +29,8 @@ type StopOptions struct {
 // 定义了回调函数执行时的超时控制和错误重试策略
 type CallbackOptions struct {
 	Timeout        time.Duration // 回调执行的超时时间，0 表示不设置超时
-	TimeoutRetries int           // 超时重试次数（<0表示忽略错误不退出，>0表示重试次数，0表示立即退出）
-	ErrorRetries   int           // 错误重试次数（<0表示忽略错误不退出，>0表示重试次数，0表示立即退出）
+	TimeoutRetries int           // 超时重试次数（<0表示忽略错误不退出，>0表示重试次数，0表示即将停止定时器任务）
+	ErrorRetries   int           // 错误重试次数（<0表示忽略错误不退出，>0表示重试次数，0表示即将停止定时器任务）
 	RetryDelay     time.Duration // 重试间隔时间，两次重试之间的等待时间
 }
 
@@ -41,14 +41,14 @@ type SetTimeoutOptions struct {
 	Fn               func(ctx context.Context) error // 回调函数，ctx 是上下文
 	OnError          func(err error)                 // 错误处理函数，当任务执行出错时调用
 	ExecutionTimeout time.Duration                   // 执行超时时间，0 表示不设置超时
-	TimeoutRetries   int                             // 超时重试次数（<0表示忽略错误不退出，>0表示重试次数，0表示立即退出）
-	ErrorRetries     int                             // 错误重试次数（<0表示忽略错误不退出，>0表示重试次数，0表示立即退出）
+	TimeoutRetries   int                             // 超时重试次数（<0表示忽略错误不退出，>0表示重试次数，0表示即将停止定时器任务）
+	ErrorRetries     int                             // 错误重试次数（<0表示忽略错误不退出，>0表示重试次数，0表示即将停止定时器任务）
 	RetryDelay       time.Duration                   // 重试间隔时间，两次重试之间的等待时间
 }
 
 // 设置默认值
 // 为 SetIntervalOptions 结构体的字段设置默认值
-func (opts *SetIntervalOptions) setDefaults() {
+func (opts *SetIntervalOptions) setDefaults() *SetIntervalOptions {
 	if opts.Interval <= 0 {
 		opts.Interval = time.Second // 默认间隔1秒
 	}
@@ -68,11 +68,12 @@ func (opts *SetIntervalOptions) setDefaults() {
 	if opts.Callback.RetryDelay <= 0 {
 		opts.Callback.RetryDelay = 500 * time.Millisecond // 默认重试间隔500ms
 	}
+	return opts
 }
 
 // 设置默认值
 // 为 SetTimeoutOptions 结构体的字段设置默认值
-func (opts *SetTimeoutOptions) setDefaults() {
+func (opts *SetTimeoutOptions) setDefaults() *SetTimeoutOptions {
 	if opts.Delay <= 0 {
 		opts.Delay = time.Second // 默认延迟1秒
 	}
@@ -88,4 +89,6 @@ func (opts *SetTimeoutOptions) setDefaults() {
 	if opts.RetryDelay <= 0 {
 		opts.RetryDelay = 500 * time.Millisecond // 默认重试间隔500ms
 	}
+
+	return opts
 }

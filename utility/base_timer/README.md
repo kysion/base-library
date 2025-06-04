@@ -40,7 +40,7 @@ func main() {
 	// 创建一个每秒执行一次的定时任务
 	stop := base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 		Interval: time.Second,
-		Fn: func(count int64, ticker *time.Ticker, ctx context.Context) error {
+		Run: func(count int64, ticker *time.Ticker, ctx context.Context) error {
 			fmt.Printf("执行次数: %d\n", count)
 			return nil
 		},
@@ -77,7 +77,7 @@ func main() {
 	// 创建一个3秒后执行的延迟任务
 	stop := base_timer.SetTimeout(ctx, base_timer.SetTimeoutOptions{
 		Delay: 3 * time.Second,
-		Fn: func(ctx context.Context) error {
+		Run: func(ctx context.Context) error {
 			fmt.Println("延迟任务执行")
 			return nil
 		},
@@ -99,7 +99,7 @@ func main() {
 ```go
 base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 	Interval: time.Second,
-	Fn: func(count int64, ticker *time.Ticker, ctx context.Context) error {
+	Run: func(count int64, ticker *time.Ticker, ctx context.Context) error {
 		// 模拟耗时操作
 		time.Sleep(2 * time.Second)
 		return nil
@@ -119,7 +119,7 @@ base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 // 阻塞等待所有任务完成
 stop := base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 	Interval: time.Second,
-	Fn: func(count int64, ticker *time.Ticker, ctx context.Context) error {
+	Run: func(count int64, ticker *time.Ticker, ctx context.Context) error {
 		return nil
 	},
 	Stop: base_timer.StopOptions{
@@ -130,7 +130,7 @@ stop := base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 // 非阻塞立即返回
 stop := base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 	Interval: time.Second,
-	Fn: func(count int64, ticker *time.Ticker, ctx context.Context) error {
+	Run: func(count int64, ticker *time.Ticker, ctx context.Context) error {
 		return nil
 	},
 	Stop: base_timer.StopOptions{
@@ -141,7 +141,7 @@ stop := base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 // 超时等待
 stop := base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 	Interval: time.Second,
-	Fn: func(count int64, ticker *time.Ticker, ctx context.Context) error {
+	Run: func(count int64, ticker *time.Ticker, ctx context.Context) error {
 		return nil
 	},
 	Stop: base_timer.StopOptions{
@@ -156,7 +156,7 @@ stop := base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 ```go
 base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 	Interval: time.Second,
-	Fn: func(count int64, ticker *time.Ticker, ctx context.Context) error {
+	Run: func(count int64, ticker *time.Ticker, ctx context.Context) error {
 		return nil
 	},
 	Sync: true, // 同步执行，每次任务执行完成后才会开始下一次计时
@@ -170,7 +170,7 @@ base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 | 字段 | 类型 | 说明 | 默认值 |
 |------|------|------|--------|
 | Interval | time.Duration | 执行间隔 | 1秒 |
-| Fn | func(count int64, ticker *time.Ticker, ctx context.Context) error | 回调函数 | 必填 |
+| Run | func(count int64, ticker *time.Ticker, ctx context.Context) error | 回调函数 | 必填 |
 | Sync | bool | 是否同步执行 | false |
 | Immediate | bool | 是否立即执行第一次 | false |
 | OnError | func(err error) | 错误处理函数 | nil |
@@ -182,7 +182,7 @@ base_timer.SetInterval(ctx, base_timer.SetIntervalOptions{
 | 字段 | 类型 | 说明 | 默认值 |
 |------|------|------|--------|
 | Delay | time.Duration | 延迟执行时间 | 1秒 |
-| Fn | func(ctx context.Context) error | 回调函数 | 必填 |
+| Run | func(ctx context.Context) error | 回调函数 | 必填 |
 | OnError | func(err error) | 错误处理函数 | nil |
 | ExecutionTimeout | time.Duration | 执行超时时间 | 0（不设置超时）|
 | TimeoutRetries | int | 超时重试次数 | -1（忽略超时错误）|

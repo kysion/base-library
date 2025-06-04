@@ -25,7 +25,7 @@ func SetInterval(ctx context.Context, options SetIntervalOptions) chan struct{} 
 	if options.Interval <= 0 {
 		panic("interval must be positive")
 	}
-	if options.Fn == nil {
+	if options.Run == nil {
 		panic("callback function is required")
 	}
 
@@ -110,7 +110,7 @@ func runIntervalCallback(
 	shouldExit, err := executeWithRetry(
 		ctx,
 		func(execCtx context.Context) error {
-			return options.Fn(count, ticker, execCtx)
+			return options.Run(count, ticker, execCtx)
 		},
 		options.Callback.Timeout,
 		options.Callback.TimeoutRetries,
