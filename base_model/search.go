@@ -3,7 +3,7 @@ package base_model
 // Pagination 分页信息
 type Pagination struct {
 	PageNum  int `json:"pageNum" v:"min:1#当前页不能小于1" default:"1" dc:"当前页"`
-	PageSize int `json:"pageSize" v:"min:5|max:500#每页数量不能小于5|每页数量不能大于500" default:"20" dc:"每页数量"`
+	PageSize int `json:"pageSize" v:"min:1|max:500#每页数量不能小于5|每页数量不能大于500" default:"20" dc:"每页数量"`
 }
 
 type PaginationRes struct {
