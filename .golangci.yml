@@ -35,7 +35,7 @@ linters-settings:
     gosec:
         exclude-generated: true
         excludes:
-            - G104 # Audit errors not checked
+            - G104 # Audit errors.go not checked
     gofmt:
         simplify: true
     unused:
