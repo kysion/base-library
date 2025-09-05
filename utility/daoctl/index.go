@@ -127,10 +127,19 @@ func Query[T any](model *gdb.Model, searchFields *base_model.SearchParams, IsExp
 		searchFields = &base_model.SearchParams{}
 	}
 
+	if len(searchFields.Filter) == 0 {
+		searchFields.Filter = make([]base_model.FilterInfo, 0)
+	}
+
 	// 根据过滤条件构建查询语句。
 	queryDb, _ := internal.MakeBuilder(model, searchFields.Filter)
-	// 根据排序条件应用排序。
-	queryDb = internal.MakeOrderBy(queryDb, searchFields.OrderBy)
+
+
+
+	if len(searchFields.OrderBy) > 0 {
+		// 根据排序条件应用排序。
+		queryDb = internal.MakeOrderBy(queryDb, searchFields.OrderBy)
+	}
 
 	// 确保页码至少为1，防止无效的页码值。
 	if searchFields.PageNum <= 1 {

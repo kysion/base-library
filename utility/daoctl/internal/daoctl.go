@@ -96,6 +96,11 @@ func MakeBuilder(db *gdb.Model, searchFieldArr []base_model.FilterInfo) (*gdb.Mo
 		// 将查询条件转换为小写，便于比较
 		whereClause := gstr.ToLower(field.Where)
 		modifierClause := gstr.ToLower(field.Modifier)
+		isNullValue := field.IsNullValue
+
+		if isNullValue {
+			field.Value = nil
+		}
 
 		// 根据查询条件的类型执行相应的查询构建操作
 		switch {
